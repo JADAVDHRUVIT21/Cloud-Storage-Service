@@ -1,7 +1,16 @@
 from fastapi import FastAPI
 
 from app.core.database import Base, engine
-from app.models import User, Folder, File, FileVersion
+from app.models import (
+    User,
+    Folder,
+    File,
+    FileVersion,
+    Share,
+    LinkShare,
+    Star,
+    Activity,
+)
 
 
 Base.metadata.create_all(bind=engine)
