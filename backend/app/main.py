@@ -1,4 +1,7 @@
 from fastapi import FastAPI
+from fastapi.openapi.models import HTTPBearer as HTTPBearerModel
+from fastapi.openapi.utils import get_openapi
+from fastapi.security import HTTPBearer
 
 from app.core.database import Base, engine
 
@@ -49,3 +52,30 @@ def health_check():
     return {
         "status": "healthy"
     }
+
+
+def custom_openapi():
+    if app.openapi_schema:
+        return app.openapi_schema
+
+    openapi_schema = get_openapi(
+        title=app.title,
+        version=app.version,
+        description="Cloud Storage Service API",
+        routes=app.routes,
+    )
+
+    openapi_schema["components"]["securitySchemes"] = {
+        "HTTPBearer": {
+            "type": "http",
+            "scheme": "bearer",
+            "bearerFormat": "JWT"
+        }
+    }
+
+    app.openapi_schema = openapi_schema
+
+    return app.openapi_schema
+
+
+app.openapi = custom_openapi
