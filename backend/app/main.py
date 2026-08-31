@@ -1,7 +1,6 @@
 from fastapi import FastAPI
-from fastapi.openapi.models import HTTPBearer as HTTPBearerModel
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi.openapi.utils import get_openapi
-from fastapi.security import HTTPBearer
 
 from app.core.database import Base, engine
 
@@ -17,6 +16,8 @@ from app.models import (
 )
 
 from app.routes.auth import router as auth_router
+from app.routes.folders import router as folders_router
+from app.routes.files import router as files_router
 from app.routes.me import router as me_router
 
 
@@ -29,8 +30,30 @@ app = FastAPI(
 )
 
 
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=[
+        "http://localhost:5173",
+        "http://127.0.0.1:5173",
+    ],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+
 app.include_router(
     auth_router,
+    prefix="/api/v1"
+)
+
+app.include_router(
+    folders_router,
+    prefix="/api/v1"
+)
+
+app.include_router(
+    files_router,
     prefix="/api/v1"
 )
 

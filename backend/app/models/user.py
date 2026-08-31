@@ -9,7 +9,10 @@ class User(Base):
 
     id = Column(Integer, primary_key=True, index=True)
 
-    full_name = Column(String(150), nullable=False)
+    full_name = Column(
+        String(150),
+        nullable=False
+    )
 
     email = Column(
         String(255),
@@ -18,7 +21,23 @@ class User(Base):
         index=True
     )
 
-    password_hash = Column(String(255), nullable=False)
+    password_hash = Column(
+        String(255),
+        nullable=True
+    )
+
+    auth_provider = Column(
+        String(50),
+        nullable=False,
+        default="email"
+    )
+
+    supabase_user_id = Column(
+        String(255),
+        unique=True,
+        nullable=True,
+        index=True
+    )
 
     created_at = Column(
         DateTime(timezone=True),

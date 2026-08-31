@@ -28,6 +28,22 @@ class RefreshTokenRequest(BaseModel):
     refresh_token: str
 
 
+class SocialLoginRequest(BaseModel):
+    supabase_user_id: str
+
+    full_name: str = Field(
+        min_length=1,
+        max_length=150
+    )
+
+    email: EmailStr
+
+    provider: str = Field(
+        min_length=2,
+        max_length=50
+    )
+
+
 class TokenResponse(BaseModel):
     access_token: str
     refresh_token: str

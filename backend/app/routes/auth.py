@@ -16,6 +16,7 @@ from app.schemas.auth import (
     RegisterRequest,
     LoginRequest,
     RefreshTokenRequest,
+    SocialLoginRequest,
     TokenResponse,
     UserResponse
 )
@@ -51,7 +52,8 @@ def register(
     user = User(
         full_name=data.full_name,
         email=data.email,
-        password_hash=hash_password(data.password)
+        password_hash=hash_password(data.password),
+        auth_provider="email"
     )
 
     db.add(user)
@@ -81,6 +83,12 @@ def login(
             detail="Invalid email or password"
         )
 
+    if user.auth_provider != "email" or not user.password_hash:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"This account uses {user.auth_provider} login"
+        )
+
     if not verify_password(
         data.password,
         user.password_hash
@@ -89,6 +97,65 @@ def login(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid email or password"
         )
+
+    access_token = create_access_token({
+        "sub": str(user.id),
+        "email": user.email
+    })
+
+    refresh_token = create_refresh_token({
+        "sub": str(user.id),
+        "email": user.email
+    })
+
+    return {
+        "access_token": access_token,
+        "refresh_token": refresh_token,
+        "token_type": "bearer"
+    }
+
+
+@router.post(
+    "/social-login",
+    response_model=TokenResponse
+)
+def social_login(
+    data: SocialLoginRequest,
+    db: Session = Depends(get_db)
+):
+    user = (
+        db.query(User)
+        .filter(User.supabase_user_id == data.supabase_user_id)
+        .first()
+    )
+
+    if not user:
+        user = (
+            db.query(User)
+            .filter(User.email == data.email)
+            .first()
+        )
+
+    if not user:
+        user = User(
+            full_name=data.full_name,
+            email=data.email,
+            password_hash=None,
+            auth_provider=data.provider,
+            supabase_user_id=data.supabase_user_id
+        )
+
+        db.add(user)
+        db.commit()
+        db.refresh(user)
+
+    else:
+        user.full_name = data.full_name
+        user.auth_provider = data.provider
+        user.supabase_user_id = data.supabase_user_id
+
+        db.commit()
+        db.refresh(user)
 
     access_token = create_access_token({
         "sub": str(user.id),
