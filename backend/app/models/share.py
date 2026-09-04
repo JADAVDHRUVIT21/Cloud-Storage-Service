@@ -15,35 +15,48 @@ class Share(Base):
 
     file_id = Column(
         Integer,
-        ForeignKey("files.id", ondelete="CASCADE"),
-        nullable=True,
+        ForeignKey(
+            "files.id",
+            ondelete="CASCADE"
+        ),
+        nullable=False,
         index=True
     )
 
     folder_id = Column(
         Integer,
-        ForeignKey("folders.id", ondelete="CASCADE"),
+        ForeignKey(
+            "folders.id",
+            ondelete="CASCADE"
+        ),
         nullable=True,
         index=True
     )
 
     owner_id = Column(
         Integer,
-        ForeignKey("users.id", ondelete="CASCADE"),
+        ForeignKey(
+            "users.id",
+            ondelete="CASCADE"
+        ),
         nullable=False,
         index=True
     )
 
     shared_with_id = Column(
         Integer,
-        ForeignKey("users.id", ondelete="CASCADE"),
+        ForeignKey(
+            "users.id",
+            ondelete="CASCADE"
+        ),
         nullable=False,
         index=True
     )
 
     role = Column(
         String(20),
-        nullable=False
+        nullable=False,
+        default="viewer"
     )
 
     created_at = Column(

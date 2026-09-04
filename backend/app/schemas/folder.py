@@ -24,6 +24,7 @@ class FolderResponse(BaseModel):
     name: str
     owner_id: int
     parent_id: int | None
+    is_deleted: int
     created_at: datetime
 
     model_config = {

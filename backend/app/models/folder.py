@@ -7,21 +7,41 @@ from app.core.database import Base
 class Folder(Base):
     __tablename__ = "folders"
 
-    id = Column(Integer, primary_key=True, index=True)
+    id = Column(
+        Integer,
+        primary_key=True,
+        index=True
+    )
 
-    name = Column(String(255), nullable=False)
+    name = Column(
+        String(255),
+        nullable=False
+    )
 
     owner_id = Column(
         Integer,
-        ForeignKey("users.id", ondelete="CASCADE"),
+        ForeignKey(
+            "users.id",
+            ondelete="CASCADE"
+        ),
         nullable=False,
         index=True
     )
 
     parent_id = Column(
         Integer,
-        ForeignKey("folders.id", ondelete="CASCADE"),
+        ForeignKey(
+            "folders.id",
+            ondelete="CASCADE"
+        ),
         nullable=True,
+        index=True
+    )
+
+    is_deleted = Column(
+        Integer,
+        nullable=False,
+        default=0,
         index=True
     )
 

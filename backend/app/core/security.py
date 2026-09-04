@@ -31,12 +31,7 @@ def verify_password(
 def create_access_token(data: dict) -> str:
     payload = data.copy()
 
-    expire = datetime.now(timezone.utc) + timedelta(
-        minutes=ACCESS_TOKEN_EXPIRE_MINUTES
-    )
-
     payload.update({
-        "exp": expire,
         "type": "access"
     })
 

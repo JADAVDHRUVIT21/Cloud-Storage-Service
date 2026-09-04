@@ -1,4 +1,12 @@
-from sqlalchemy import Column, Integer, String, ForeignKey, DateTime, Boolean
+import secrets
+
+from sqlalchemy import (
+    Column,
+    DateTime,
+    ForeignKey,
+    Integer,
+    String,
+)
 from sqlalchemy.sql import func
 
 from app.core.database import Base
@@ -10,55 +18,59 @@ class LinkShare(Base):
     id = Column(
         Integer,
         primary_key=True,
-        index=True
+        index=True,
     )
 
     file_id = Column(
         Integer,
-        ForeignKey("files.id", ondelete="CASCADE"),
-        nullable=True,
-        index=True
-    )
-
-    folder_id = Column(
-        Integer,
-        ForeignKey("folders.id", ondelete="CASCADE"),
-        nullable=True,
-        index=True
+        ForeignKey(
+            "files.id",
+            ondelete="CASCADE",
+        ),
+        nullable=False,
+        unique=True,
+        index=True,
     )
 
     owner_id = Column(
         Integer,
-        ForeignKey("users.id", ondelete="CASCADE"),
+        ForeignKey(
+            "users.id",
+            ondelete="CASCADE",
+        ),
         nullable=False,
-        index=True
+        index=True,
     )
 
     token = Column(
         String(255),
         unique=True,
         nullable=False,
-        index=True
+        index=True,
+        default=lambda: secrets.token_urlsafe(32),
     )
 
-    password_hash = Column(
-        String(255),
-        nullable=True
-    )
-
-    expires_at = Column(
-        DateTime(timezone=True),
-        nullable=True
-    )
-
-    is_active = Column(
-        Boolean,
+    access_type = Column(
+        String(30),
         nullable=False,
-        default=True
+        default="restricted",
+    )
+
+    role = Column(
+        String(20),
+        nullable=False,
+        default="viewer",
     )
 
     created_at = Column(
         DateTime(timezone=True),
         server_default=func.now(),
-        nullable=False
+        nullable=False,
+    )
+
+    updated_at = Column(
+        DateTime(timezone=True),
+        server_default=func.now(),
+        onupdate=func.now(),
+        nullable=False,
     )

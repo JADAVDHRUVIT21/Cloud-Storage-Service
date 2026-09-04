@@ -19,6 +19,7 @@ from app.routes.auth import router as auth_router
 from app.routes.folders import router as folders_router
 from app.routes.files import router as files_router
 from app.routes.me import router as me_router
+from app.routes.shares import router as shares_router
 
 
 Base.metadata.create_all(bind=engine)
@@ -35,31 +36,39 @@ app.add_middleware(
     allow_origins=[
         "http://localhost:5173",
         "http://127.0.0.1:5173",
+        "http://localhost:5174",
+        "http://127.0.0.1:5174",
     ],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
+    expose_headers=["*"],
 )
 
 
 app.include_router(
     auth_router,
-    prefix="/api/v1"
+    prefix="/api/v1",
 )
 
 app.include_router(
     folders_router,
-    prefix="/api/v1"
+    prefix="/api/v1",
 )
 
 app.include_router(
     files_router,
-    prefix="/api/v1"
+    prefix="/api/v1",
+)
+
+app.include_router(
+    shares_router,
+    prefix="/api/v1",
 )
 
 app.include_router(
     me_router,
-    prefix="/api/v1"
+    prefix="/api/v1",
 )
 
 
@@ -92,7 +101,7 @@ def custom_openapi():
         "HTTPBearer": {
             "type": "http",
             "scheme": "bearer",
-            "bearerFormat": "JWT"
+            "bearerFormat": "JWT",
         }
     }
 

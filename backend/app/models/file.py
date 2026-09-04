@@ -59,6 +59,13 @@ class File(Base):
         index=True
     )
 
+    is_starred = Column(
+        Integer,
+        nullable=False,
+        default=0,
+        index=True
+    )
+
     created_at = Column(
         DateTime(timezone=True),
         server_default=func.now(),

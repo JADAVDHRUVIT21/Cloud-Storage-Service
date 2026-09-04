@@ -7,6 +7,9 @@ import Register from "./pages/auth/Register";
 import Dashboard from "./pages/dashboard/Dashboard";
 import MyFiles from "./pages/dashboard/MyFiles";
 import Trash from "./pages/dashboard/Trash";
+import Recent from "./pages/dashboard/Recent";
+import Folder from "./pages/dashboard/Folder";
+import Starred from "./pages/dashboard/Starred"; // ✅ ADD THIS IMPORT
 
 function ProtectedRoute({ children }) {
   const { isAuthenticated, loading } = useAuth();
@@ -21,15 +24,23 @@ function ProtectedRoute({ children }) {
     );
   }
 
-  return isAuthenticated ? children : <Navigate to="/login" replace />;
+  return isAuthenticated ? children : (
+    <Navigate to="/login" replace />
+  );
 }
 
 function App() {
   return (
     <Routes>
-      <Route path="/login" element={<Login />} />
+      <Route
+        path="/login"
+        element={<Login />}
+      />
 
-      <Route path="/register" element={<Register />} />
+      <Route
+        path="/register"
+        element={<Register />}
+      />
 
       <Route
         path="/dashboard"
@@ -50,6 +61,34 @@ function App() {
       />
 
       <Route
+        path="/recent"
+        element={
+          <ProtectedRoute>
+            <Recent />
+          </ProtectedRoute>
+        }
+      />
+
+      {/* ✅ ADD THE STARRED ROUTE */}
+      <Route
+        path="/starred"
+        element={
+          <ProtectedRoute>
+            <Starred />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/folders/:folderId"
+        element={
+          <ProtectedRoute>
+            <Folder />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
         path="/trash"
         element={
           <ProtectedRoute>
@@ -58,9 +97,25 @@ function App() {
         }
       />
 
-      <Route path="/" element={<Navigate to="/dashboard" replace />} />
+      <Route
+        path="/"
+        element={
+          <Navigate
+            to="/dashboard"
+            replace
+          />
+        }
+      />
 
-      <Route path="*" element={<Navigate to="/dashboard" replace />} />
+      <Route
+        path="*"
+        element={
+          <Navigate
+            to="/dashboard"
+            replace
+          />
+        }
+      />
     </Routes>
   );
 }
