@@ -16,7 +16,7 @@ function Register() {
   const [success, setSuccess] = useState("");
 
   const API_URL =
-    import.meta.env.VITE_API_URL || "http://127.0.0.1:8000";
+  import.meta.env.VITE_API_URL || "http://127.0.0.1:8000/api/v1";
 
   const handleRegister = async (e) => {
     e.preventDefault();
@@ -52,7 +52,7 @@ function Register() {
     try {
       setLoading(true);
 
-      await axios.post(`${API_URL}/api/v1/auth/register`, {
+      await axios.post(`${API_URL}/auth/register`, {
         full_name: fullName.trim(),
         email: email.trim(),
         password: password,
