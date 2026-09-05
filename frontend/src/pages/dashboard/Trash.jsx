@@ -1094,11 +1094,11 @@ function Trash() {
 
             <div className="flex min-h-screen items-center justify-center bg-[#f5f5f7]">
 
-                <div className="flex flex-col items-center gap-4">
+                <div className="flex flex-col items-center gap-3 sm:gap-4 px-4">
 
-                    <div className="h-10 w-10 animate-spin rounded-full border-4 border-slate-200 border-t-blue-500" />
+                    <div className="h-8 w-8 sm:h-10 sm:w-10 animate-spin rounded-full border-4 border-slate-200 border-t-blue-500" />
 
-                    <p className="text-sm font-medium text-slate-500">
+                    <p className="text-xs sm:text-sm font-medium text-slate-500">
                         Loading Trash...
                     </p>
 
@@ -1113,15 +1113,15 @@ function Trash() {
 
     return (
 
-        <div className="min-h-screen bg-[#f5f5f7] p-4 sm:p-6 lg:p-8">
+        <div className="min-h-screen bg-[#f5f5f7] p-3 sm:p-4 md:p-6 lg:p-8">
 
             <div className="mx-auto max-w-7xl">
 
 
-                <div className="mb-8 flex flex-col justify-between gap-5 sm:flex-row sm:items-center">
+                <div className="mb-6 sm:mb-8 flex flex-col justify-between gap-4 sm:gap-5 sm:flex-row sm:items-center">
 
 
-                    <div className="flex min-w-0 items-center gap-4">
+                    <div className="flex min-w-0 items-center gap-3 sm:gap-4">
 
 
                         <button
@@ -1142,7 +1142,7 @@ function Trash() {
                                 }
 
                             }}
-                            className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-white text-2xl text-slate-700 shadow-sm ring-1 ring-black/5 transition hover:scale-105 hover:bg-slate-50 active:scale-95"
+                            className="flex h-9 w-9 sm:h-11 sm:w-11 shrink-0 items-center justify-center rounded-full bg-white text-lg sm:text-2xl text-slate-700 shadow-sm ring-1 ring-black/5 transition hover:scale-105 hover:bg-slate-50 active:scale-95"
                         >
                             ←
                         </button>
@@ -1150,7 +1150,7 @@ function Trash() {
 
                         <div className="min-w-0">
 
-                            <h1 className="break-words text-3xl font-bold tracking-tight text-[#1d1d1f]">
+                            <h1 className="break-words text-2xl sm:text-3xl font-bold tracking-tight text-[#1d1d1f]">
 
                                 {openedFolder
                                     ? openedFolder.name
@@ -1159,7 +1159,7 @@ function Trash() {
                             </h1>
 
 
-                            <p className="mt-1 text-sm text-[#6e6e73]">
+                            <p className="mt-0.5 sm:mt-1 text-xs sm:text-sm text-[#6e6e73]">
 
                                 {openedFolder
                                     ? "Recently deleted files in this folder"
@@ -1175,7 +1175,7 @@ function Trash() {
                     {!openedFolder &&
                         allItems.length > 0 && (
 
-                            <div className="flex flex-wrap items-center gap-3">
+                            <div className="flex flex-wrap items-center gap-2 sm:gap-3">
 
 
                                 <button
@@ -1184,7 +1184,7 @@ function Trash() {
                                             true
                                         )
                                     }
-                                    className="rounded-full bg-blue-500 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-600 active:scale-95"
+                                    className="rounded-full bg-blue-500 px-4 sm:px-5 py-2 sm:py-2.5 text-xs sm:text-sm font-semibold text-white shadow-sm transition hover:bg-blue-600 active:scale-95"
                                 >
                                     Restore All
                                 </button>
@@ -1196,7 +1196,7 @@ function Trash() {
                                             true
                                         )
                                     }
-                                    className="rounded-full bg-[#ff3b30] px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-red-600 active:scale-95"
+                                    className="rounded-full bg-[#ff3b30] px-4 sm:px-5 py-2 sm:py-2.5 text-xs sm:text-sm font-semibold text-white shadow-sm transition hover:bg-red-600 active:scale-95"
                                 >
                                     Empty Trash
                                 </button>
@@ -1210,7 +1210,7 @@ function Trash() {
 
                 {error && (
 
-                    <div className="mb-6 break-words rounded-2xl border border-red-200 bg-red-50 px-5 py-4 text-sm text-red-600">
+                    <div className="mb-4 sm:mb-6 break-words rounded-2xl border border-red-200 bg-red-50 px-4 sm:px-5 py-3 sm:py-4 text-xs sm:text-sm text-red-600">
 
                         {error}
 
@@ -1225,13 +1225,13 @@ function Trash() {
 
                         {folderLoading ? (
 
-                            <div className="flex min-h-[400px] items-center justify-center">
+                            <div className="flex min-h-[300px] sm:min-h-[400px] items-center justify-center">
 
-                                <div className="flex flex-col items-center gap-4">
+                                <div className="flex flex-col items-center gap-3 sm:gap-4">
 
-                                    <div className="h-10 w-10 animate-spin rounded-full border-4 border-slate-200 border-t-blue-500" />
+                                    <div className="h-8 w-8 sm:h-10 sm:w-10 animate-spin rounded-full border-4 border-slate-200 border-t-blue-500" />
 
-                                    <p className="text-sm text-slate-500">
+                                    <p className="text-xs sm:text-sm text-slate-500">
                                         Opening folder...
                                     </p>
 
@@ -1241,21 +1241,21 @@ function Trash() {
 
                         ) : folderFiles.length === 0 ? (
 
-                            <div className="flex min-h-[420px] flex-col items-center justify-center rounded-[28px] bg-white p-10 text-center shadow-sm ring-1 ring-black/[0.04]">
+                            <div className="flex min-h-[350px] sm:min-h-[420px] flex-col items-center justify-center rounded-[24px] sm:rounded-[28px] bg-white p-6 sm:p-10 text-center shadow-sm ring-1 ring-black/[0.04]">
 
-                                <div className="flex h-24 w-24 items-center justify-center rounded-[30px] bg-blue-50 text-5xl">
+                                <div className="flex h-20 w-20 sm:h-24 sm:w-24 items-center justify-center rounded-[24px] sm:rounded-[30px] bg-blue-50 text-4xl sm:text-5xl">
 
                                     📁
 
                                 </div>
 
-                                <h2 className="mt-6 text-xl font-semibold text-[#1d1d1f]">
+                                <h2 className="mt-4 sm:mt-6 text-lg sm:text-xl font-semibold text-[#1d1d1f]">
 
                                     This folder is empty
 
                                 </h2>
 
-                                <p className="mt-2 text-sm text-[#6e6e73]">
+                                <p className="mt-1 sm:mt-2 text-xs sm:text-sm text-[#6e6e73]">
 
                                     There are no deleted files here.
 
@@ -1265,7 +1265,7 @@ function Trash() {
 
                         ) : (
 
-                            <div className="overflow-hidden rounded-[28px] bg-white shadow-sm ring-1 ring-black/[0.04]">
+                            <div className="overflow-hidden rounded-[24px] sm:rounded-[28px] bg-white shadow-sm ring-1 ring-black/[0.04]">
 
                                 {folderFiles.map(
                                     (
@@ -1275,7 +1275,7 @@ function Trash() {
 
                                         <div
                                             key={file.id}
-                                            className={`flex flex-col gap-4 px-5 py-5 transition hover:bg-slate-50 sm:flex-row sm:items-center sm:justify-between ${
+                                            className={`flex flex-col gap-3 sm:gap-4 px-4 sm:px-5 py-4 sm:py-5 transition hover:bg-slate-50 sm:flex-row sm:items-center sm:justify-between ${
                                                 index !==
                                                 folderFiles.length -
                                                 1
@@ -1291,11 +1291,11 @@ function Trash() {
                                                         file
                                                     )
                                                 }
-                                                className="flex min-w-0 flex-1 items-center gap-4 text-left"
+                                                className="flex min-w-0 flex-1 items-center gap-3 sm:gap-4 text-left"
                                             >
 
 
-                                                <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-slate-100 text-2xl">
+                                                <div className="flex h-12 w-12 sm:h-14 sm:w-14 shrink-0 items-center justify-center rounded-2xl bg-slate-100 text-xl sm:text-2xl">
 
                                                     {isImage(
                                                         file
@@ -1312,13 +1312,13 @@ function Trash() {
 
                                                 <div className="min-w-0">
 
-                                                    <p className="truncate font-semibold text-[#1d1d1f]">
+                                                    <p className="truncate text-xs sm:text-sm font-semibold text-[#1d1d1f]">
 
                                                         {file.original_name}
 
                                                     </p>
 
-                                                    <p className="mt-1 text-sm text-[#86868b]">
+                                                    <p className="mt-0.5 sm:mt-1 text-xs text-[#86868b]">
 
                                                         {getFileType(
                                                             file
@@ -1337,7 +1337,7 @@ function Trash() {
                                             </button>
 
 
-                                            <div className="flex shrink-0 items-center gap-3">
+                                            <div className="flex shrink-0 items-center gap-2 sm:gap-3">
 
 
                                                 <button
@@ -1347,7 +1347,7 @@ function Trash() {
                                                             type: "file",
                                                         })
                                                     }
-                                                    className="rounded-full bg-blue-50 px-4 py-2 text-sm font-semibold text-blue-600 transition hover:bg-blue-100"
+                                                    className="rounded-full bg-blue-50 px-3 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm font-semibold text-blue-600 transition hover:bg-blue-100"
                                                 >
                                                     Restore
                                                 </button>
@@ -1360,7 +1360,7 @@ function Trash() {
                                                             type: "file",
                                                         })
                                                     }
-                                                    className="rounded-full bg-red-50 px-4 py-2 text-sm font-semibold text-[#ff3b30] transition hover:bg-red-100"
+                                                    className="rounded-full bg-red-50 px-3 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm font-semibold text-[#ff3b30] transition hover:bg-red-100"
                                                 >
                                                     Delete
                                                 </button>
@@ -1384,24 +1384,24 @@ function Trash() {
 
                         {allItems.length === 0 ? (
 
-                            <div className="flex min-h-[500px] flex-col items-center justify-center rounded-[30px] bg-white p-10 text-center shadow-sm ring-1 ring-black/[0.04]">
+                            <div className="flex min-h-[400px] sm:min-h-[500px] flex-col items-center justify-center rounded-[24px] sm:rounded-[30px] bg-white p-6 sm:p-10 text-center shadow-sm ring-1 ring-black/[0.04]">
 
 
-                                <div className="flex h-28 w-28 items-center justify-center rounded-[35px] bg-slate-100 text-6xl">
+                                <div className="flex h-24 w-24 sm:h-28 sm:w-28 items-center justify-center rounded-[28px] sm:rounded-[35px] bg-slate-100 text-5xl sm:text-6xl">
 
                                     🗑️
 
                                 </div>
 
 
-                                <h2 className="mt-7 text-2xl font-bold tracking-tight text-[#1d1d1f]">
+                                <h2 className="mt-5 sm:mt-7 text-xl sm:text-2xl font-bold tracking-tight text-[#1d1d1f]">
 
                                     Trash is empty
 
                                 </h2>
 
 
-                                <p className="mt-3 max-w-sm text-sm leading-6 text-[#86868b]">
+                                <p className="mt-2 sm:mt-3 max-w-sm text-xs sm:text-sm leading-5 sm:leading-6 text-[#86868b]">
 
                                     Deleted files and folders will appear here.
 
@@ -1411,12 +1411,12 @@ function Trash() {
 
                         ) : (
 
-                            <div className="overflow-hidden rounded-[28px] bg-white shadow-sm ring-1 ring-black/[0.04]">
+                            <div className="overflow-hidden rounded-[24px] sm:rounded-[28px] bg-white shadow-sm ring-1 ring-black/[0.04]">
 
 
-                                <div className="border-b border-slate-100 px-5 py-4">
+                                <div className="border-b border-slate-100 px-4 sm:px-5 py-3 sm:py-4">
 
-                                    <p className="text-xs font-semibold uppercase tracking-wider text-[#86868b]">
+                                    <p className="text-[10px] sm:text-xs font-semibold uppercase tracking-wider text-[#86868b]">
 
                                         Recently Deleted
 
@@ -1433,7 +1433,7 @@ function Trash() {
 
                                         <div
                                             key={`${item.type}-${item.id}`}
-                                            className={`flex flex-col gap-4 px-5 py-5 transition hover:bg-[#f8f8fa] sm:flex-row sm:items-center sm:justify-between ${
+                                            className={`flex flex-col gap-3 sm:gap-4 px-4 sm:px-5 py-4 sm:py-5 transition hover:bg-[#f8f8fa] sm:flex-row sm:items-center sm:justify-between ${
                                                 index !==
                                                 allItems.length -
                                                 1
@@ -1464,11 +1464,11 @@ function Trash() {
                                                     }
 
                                                 }}
-                                                className="flex min-w-0 flex-1 items-center gap-4 text-left"
+                                                className="flex min-w-0 flex-1 items-center gap-3 sm:gap-4 text-left"
                                             >
 
 
-                                                <div className={`flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl text-2xl ${
+                                                <div className={`flex h-12 w-12 sm:h-14 sm:w-14 shrink-0 items-center justify-center rounded-2xl text-xl sm:text-2xl ${
                                                     item.type ===
                                                     "folder"
                                                         ? "bg-blue-50"
@@ -1493,7 +1493,7 @@ function Trash() {
 
                                                 <div className="min-w-0">
 
-                                                    <p className="truncate font-semibold text-[#1d1d1f] transition hover:text-blue-600">
+                                                    <p className="truncate text-xs sm:text-sm font-semibold text-[#1d1d1f] transition hover:text-blue-600">
 
                                                         {getItemName(
                                                             item
@@ -1502,7 +1502,7 @@ function Trash() {
                                                     </p>
 
 
-                                                    <p className="mt-1 text-sm text-[#86868b]">
+                                                    <p className="mt-0.5 sm:mt-1 text-xs text-[#86868b]">
 
                                                         {item.type ===
                                                         "folder"
@@ -1516,7 +1516,7 @@ function Trash() {
                                             </button>
 
 
-                                            <div className="flex shrink-0 items-center gap-3">
+                                            <div className="flex shrink-0 items-center gap-2 sm:gap-3">
 
 
                                                 <button
@@ -1525,7 +1525,7 @@ function Trash() {
                                                             item
                                                         )
                                                     }
-                                                    className="rounded-full bg-blue-50 px-4 py-2 text-sm font-semibold text-blue-600 transition hover:bg-blue-100 active:scale-95"
+                                                    className="rounded-full bg-blue-50 px-3 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm font-semibold text-blue-600 transition hover:bg-blue-100 active:scale-95"
                                                 >
                                                     Restore
                                                 </button>
@@ -1537,7 +1537,7 @@ function Trash() {
                                                             item
                                                         )
                                                     }
-                                                    className="rounded-full bg-red-50 px-4 py-2 text-sm font-semibold text-[#ff3b30] transition hover:bg-red-100 active:scale-95"
+                                                    className="rounded-full bg-red-50 px-3 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm font-semibold text-[#ff3b30] transition hover:bg-red-100 active:scale-95"
                                                 >
                                                     Delete
                                                 </button>
@@ -1560,30 +1560,31 @@ function Trash() {
             </div>
 
 
+            {/* Preview Modal - Responsive */}
             {previewFile && (
 
                 <div
                     onClick={closePreview}
-                    className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 p-3 backdrop-blur-xl sm:p-6"
+                    className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 p-2 sm:p-3 md:p-6 backdrop-blur-xl"
                 >
 
                     <div
                         onClick={(event) =>
                             event.stopPropagation()
                         }
-                        className="relative flex h-[92vh] w-full max-w-6xl flex-col overflow-hidden rounded-[28px] border border-white/20 bg-slate-900/95 shadow-2xl backdrop-blur-2xl"
+                        className="relative flex h-[90vh] sm:h-[92vh] w-full max-w-6xl flex-col overflow-hidden rounded-[20px] sm:rounded-[28px] border border-white/20 bg-slate-900/95 shadow-2xl backdrop-blur-2xl"
                     >
 
 
-                        <div className="flex items-center justify-between border-b border-white/10 bg-white/5 px-4 py-3 backdrop-blur-xl sm:px-6">
+                        <div className="flex items-center justify-between border-b border-white/10 bg-white/5 px-3 sm:px-6 py-2 sm:py-3 backdrop-blur-xl">
 
 
-                            <div className="flex min-w-0 items-center gap-4">
+                            <div className="flex min-w-0 items-center gap-2 sm:gap-4">
 
 
                                 <button
                                     onClick={closePreview}
-                                    className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-red-500 text-lg font-bold text-white shadow-lg transition hover:scale-105"
+                                    className="flex h-8 w-8 sm:h-9 sm:w-9 shrink-0 items-center justify-center rounded-full bg-red-500 text-base sm:text-lg font-bold text-white shadow-lg transition hover:scale-105"
                                 >
                                     ×
                                 </button>
@@ -1591,14 +1592,14 @@ function Trash() {
 
                                 <div className="min-w-0">
 
-                                    <p className="truncate text-sm font-semibold text-white sm:text-base">
+                                    <p className="truncate text-xs sm:text-sm font-semibold text-white sm:text-base">
 
                                         {previewFile.original_name}
 
                                     </p>
 
 
-                                    <p className="text-xs text-slate-400">
+                                    <p className="text-[10px] sm:text-xs text-slate-400">
 
                                         {formatFileSize(
                                             previewFile.size
@@ -1615,7 +1616,7 @@ function Trash() {
                                 previewFile
                             ) && (
 
-                                <div className="flex shrink-0 items-center gap-2">
+                                <div className="flex shrink-0 items-center gap-1 sm:gap-2">
 
 
                                     <button
@@ -1631,7 +1632,7 @@ function Trash() {
                                                     )
                                             )
                                         }
-                                        className="flex h-9 w-9 items-center justify-center rounded-full bg-white/10 text-xl text-white transition hover:bg-white/20"
+                                        className="flex h-7 w-7 sm:h-9 sm:w-9 items-center justify-center rounded-full bg-white/10 text-base sm:text-xl text-white transition hover:bg-white/20"
                                     >
                                         −
                                     </button>
@@ -1643,7 +1644,7 @@ function Trash() {
                                                 1
                                             )
                                         }
-                                        className="hidden rounded-full bg-white/10 px-3 py-2 text-xs text-white transition hover:bg-white/20 sm:block"
+                                        className="hidden sm:block rounded-full bg-white/10 px-2 sm:px-3 py-1 sm:py-2 text-[10px] sm:text-xs text-white transition hover:bg-white/20"
                                     >
                                         {Math.round(
                                             imageZoom *
@@ -1665,7 +1666,7 @@ function Trash() {
                                                     )
                                             )
                                         }
-                                        className="flex h-9 w-9 items-center justify-center rounded-full bg-white/10 text-xl text-white transition hover:bg-white/20"
+                                        className="flex h-7 w-7 sm:h-9 sm:w-9 items-center justify-center rounded-full bg-white/10 text-base sm:text-xl text-white transition hover:bg-white/20"
                                     >
                                         +
                                     </button>
@@ -1677,7 +1678,7 @@ function Trash() {
                         </div>
 
 
-                        <div className="relative flex flex-1 items-center justify-center overflow-hidden bg-black/30 p-4 sm:p-8">
+                        <div className="relative flex flex-1 items-center justify-center overflow-hidden bg-black/30 p-2 sm:p-4 md:p-8">
 
 
                             {previewItems.length > 1 && (
@@ -1686,7 +1687,7 @@ function Trash() {
                                     onClick={
                                         openPreviousPreview
                                     }
-                                    className="absolute left-3 z-20 flex h-11 w-11 items-center justify-center rounded-full bg-black/40 text-2xl text-white backdrop-blur-xl transition hover:scale-105 hover:bg-black/70 sm:left-6"
+                                    className="absolute left-1 sm:left-3 md:left-6 z-20 flex h-8 w-8 sm:h-11 sm:w-11 items-center justify-center rounded-full bg-black/40 text-lg sm:text-2xl text-white backdrop-blur-xl transition hover:scale-105 hover:bg-black/70"
                                 >
                                     ‹
                                 </button>
@@ -1696,11 +1697,11 @@ function Trash() {
 
                             {previewLoading ? (
 
-                                <div className="flex flex-col items-center gap-4">
+                                <div className="flex flex-col items-center gap-3 sm:gap-4">
 
-                                    <div className="h-12 w-12 animate-spin rounded-full border-4 border-white/20 border-t-white" />
+                                    <div className="h-8 w-8 sm:h-12 sm:w-12 animate-spin rounded-full border-4 border-white/20 border-t-white" />
 
-                                    <p className="text-sm text-white">
+                                    <p className="text-xs sm:text-sm text-white">
 
                                         Loading preview...
 
@@ -1710,9 +1711,9 @@ function Trash() {
 
                             ) : previewError ? (
 
-                                <div className="rounded-2xl bg-red-500/10 p-8 text-center text-red-300">
+                                <div className="rounded-2xl bg-red-500/10 p-4 sm:p-8 text-center text-red-300">
 
-                                    {previewError}
+                                    <p className="text-xs sm:text-sm">{previewError}</p>
 
                                 </div>
 
@@ -1735,7 +1736,7 @@ function Trash() {
                                                 transform:
                                                     `scale(${imageZoom})`,
                                             }}
-                                            className="max-h-[72vh] max-w-full rounded-2xl object-contain shadow-2xl transition-transform duration-200"
+                                            className="max-h-[60vh] sm:max-h-[72vh] max-w-full rounded-2xl object-contain shadow-2xl transition-transform duration-200"
                                         />
 
                                     </div>
@@ -1750,7 +1751,7 @@ function Trash() {
                                         }
                                         controls
                                         autoPlay
-                                        className="max-h-[72vh] max-w-full rounded-2xl shadow-2xl"
+                                        className="max-h-[60vh] sm:max-h-[72vh] max-w-full rounded-2xl shadow-2xl"
                                     />
 
                                 ) : null
@@ -1764,7 +1765,7 @@ function Trash() {
                                     onClick={
                                         openNextPreview
                                     }
-                                    className="absolute right-3 z-20 flex h-11 w-11 items-center justify-center rounded-full bg-black/40 text-2xl text-white backdrop-blur-xl transition hover:scale-105 hover:bg-black/70 sm:right-6"
+                                    className="absolute right-1 sm:right-3 md:right-6 z-20 flex h-8 w-8 sm:h-11 sm:w-11 items-center justify-center rounded-full bg-black/40 text-lg sm:text-2xl text-white backdrop-blur-xl transition hover:scale-105 hover:bg-black/70"
                                 >
                                     ›
                                 </button>
@@ -1774,7 +1775,7 @@ function Trash() {
                         </div>
 
 
-                        <div className="flex items-center justify-between border-t border-white/10 bg-white/5 px-5 py-3 text-xs text-slate-400 backdrop-blur-xl">
+                        <div className="flex items-center justify-between border-t border-white/10 bg-white/5 px-3 sm:px-5 py-2 sm:py-3 text-[10px] sm:text-xs text-slate-400 backdrop-blur-xl">
 
                             <span>
 
@@ -1803,23 +1804,24 @@ function Trash() {
             )}
 
 
+            {/* Restore Confirmation Modal - Responsive */}
             {restoreItem && (
 
-                <div className="fixed inset-0 z-[110] flex items-center justify-center overflow-y-auto bg-black/40 p-4 backdrop-blur-md">
+                <div className="fixed inset-0 z-[110] flex items-center justify-center overflow-y-auto bg-black/40 p-3 sm:p-4 backdrop-blur-md">
 
-                    <div className="my-auto w-full max-w-md overflow-hidden rounded-[28px] bg-white p-5 shadow-2xl sm:p-7">
+                    <div className="my-auto w-full max-w-md overflow-hidden rounded-[24px] sm:rounded-[28px] bg-white p-4 sm:p-7 shadow-2xl">
 
 
-                        <h2 className="text-xl font-bold text-[#1d1d1f]">
+                        <h2 className="text-lg sm:text-xl font-bold text-[#1d1d1f]">
 
                             Restore {restoreItem.type}?
 
                         </h2>
 
 
-                        <div className="mt-3 max-h-[45vh] overflow-y-auto pr-1">
+                        <div className="mt-2 sm:mt-3 max-h-[45vh] overflow-y-auto pr-1">
 
-                            <p className="text-sm leading-6 text-[#6e6e73]">
+                            <p className="text-xs sm:text-sm leading-5 sm:leading-6 text-[#6e6e73]">
 
                                 Are you sure you want to restore{" "}
 
@@ -1838,7 +1840,7 @@ function Trash() {
                         </div>
 
 
-                        <div className="mt-7 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
+                        <div className="mt-5 sm:mt-7 flex flex-col-reverse gap-2 sm:gap-3 sm:flex-row sm:justify-end">
 
 
                             <button
@@ -1847,7 +1849,7 @@ function Trash() {
                                         null
                                     )
                                 }
-                                className="w-full rounded-full bg-slate-100 px-5 py-2.5 text-sm font-semibold text-slate-700 sm:w-auto"
+                                className="w-full rounded-full bg-slate-100 px-4 sm:px-5 py-2 sm:py-2.5 text-xs sm:text-sm font-semibold text-slate-700 sm:w-auto"
                             >
                                 Cancel
                             </button>
@@ -1860,7 +1862,7 @@ function Trash() {
                                 disabled={
                                     actionLoading
                                 }
-                                className="w-full rounded-full bg-blue-500 px-5 py-2.5 text-sm font-semibold text-white disabled:opacity-50 sm:w-auto"
+                                className="w-full rounded-full bg-blue-500 px-4 sm:px-5 py-2 sm:py-2.5 text-xs sm:text-sm font-semibold text-white disabled:opacity-50 sm:w-auto"
                             >
                                 Restore
                             </button>
@@ -1874,23 +1876,24 @@ function Trash() {
             )}
 
 
+            {/* Delete Confirmation Modal - Responsive */}
             {deleteItem && (
 
-                <div className="fixed inset-0 z-[110] flex items-center justify-center overflow-y-auto bg-black/40 p-4 backdrop-blur-md">
+                <div className="fixed inset-0 z-[110] flex items-center justify-center overflow-y-auto bg-black/40 p-3 sm:p-4 backdrop-blur-md">
 
-                    <div className="my-auto w-full max-w-md overflow-hidden rounded-[28px] bg-white p-5 shadow-2xl sm:p-7">
+                    <div className="my-auto w-full max-w-md overflow-hidden rounded-[24px] sm:rounded-[28px] bg-white p-4 sm:p-7 shadow-2xl">
 
 
-                        <h2 className="text-xl font-bold text-[#1d1d1f]">
+                        <h2 className="text-lg sm:text-xl font-bold text-[#1d1d1f]">
 
                             Permanently delete?
 
                         </h2>
 
 
-                        <div className="mt-3 max-h-[45vh] overflow-y-auto pr-1">
+                        <div className="mt-2 sm:mt-3 max-h-[45vh] overflow-y-auto pr-1">
 
-                            <p className="text-sm leading-6 text-[#6e6e73]">
+                            <p className="text-xs sm:text-sm leading-5 sm:leading-6 text-[#6e6e73]">
 
                                 <span className="block break-all font-semibold text-[#1d1d1f]">
 
@@ -1900,7 +1903,7 @@ function Trash() {
 
                                 </span>
 
-                                <span className="mt-2 block">
+                                <span className="mt-1 sm:mt-2 block">
 
                                     will be permanently deleted.
                                     This action cannot be undone.
@@ -1912,7 +1915,7 @@ function Trash() {
                         </div>
 
 
-                        <div className="mt-7 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
+                        <div className="mt-5 sm:mt-7 flex flex-col-reverse gap-2 sm:gap-3 sm:flex-row sm:justify-end">
 
 
                             <button
@@ -1921,7 +1924,7 @@ function Trash() {
                                         null
                                     )
                                 }
-                                className="w-full rounded-full bg-slate-100 px-5 py-2.5 text-sm font-semibold text-slate-700 sm:w-auto"
+                                className="w-full rounded-full bg-slate-100 px-4 sm:px-5 py-2 sm:py-2.5 text-xs sm:text-sm font-semibold text-slate-700 sm:w-auto"
                             >
                                 Cancel
                             </button>
@@ -1934,7 +1937,7 @@ function Trash() {
                                 disabled={
                                     actionLoading
                                 }
-                                className="w-full rounded-full bg-[#ff3b30] px-5 py-2.5 text-sm font-semibold text-white disabled:opacity-50 sm:w-auto"
+                                className="w-full rounded-full bg-[#ff3b30] px-4 sm:px-5 py-2 sm:py-2.5 text-xs sm:text-sm font-semibold text-white disabled:opacity-50 sm:w-auto"
                             >
                                 Delete
                             </button>
@@ -1948,21 +1951,22 @@ function Trash() {
             )}
 
 
+            {/* Restore All Confirmation Modal - Responsive */}
             {showRestoreAllConfirm && (
 
-                <div className="fixed inset-0 z-[110] flex items-center justify-center overflow-y-auto bg-black/40 p-4 backdrop-blur-md">
+                <div className="fixed inset-0 z-[110] flex items-center justify-center overflow-y-auto bg-black/40 p-3 sm:p-4 backdrop-blur-md">
 
-                    <div className="my-auto w-full max-w-md rounded-[28px] bg-white p-5 shadow-2xl sm:p-7">
+                    <div className="my-auto w-full max-w-md overflow-hidden rounded-[24px] sm:rounded-[28px] bg-white p-4 sm:p-7 shadow-2xl">
 
 
-                        <h2 className="text-xl font-bold text-[#1d1d1f]">
+                        <h2 className="text-lg sm:text-xl font-bold text-[#1d1d1f]">
 
                             Restore all items?
 
                         </h2>
 
 
-                        <p className="mt-3 text-sm leading-6 text-[#6e6e73]">
+                        <p className="mt-2 sm:mt-3 text-xs sm:text-sm leading-5 sm:leading-6 text-[#6e6e73]">
 
                             Are you sure you want to restore{" "}
 
@@ -1977,7 +1981,7 @@ function Trash() {
                         </p>
 
 
-                        <div className="mt-7 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
+                        <div className="mt-5 sm:mt-7 flex flex-col-reverse gap-2 sm:gap-3 sm:flex-row sm:justify-end">
 
 
                             <button
@@ -1986,7 +1990,7 @@ function Trash() {
                                         false
                                     )
                                 }
-                                className="w-full rounded-full bg-slate-100 px-5 py-2.5 text-sm font-semibold text-slate-700 sm:w-auto"
+                                className="w-full rounded-full bg-slate-100 px-4 sm:px-5 py-2 sm:py-2.5 text-xs sm:text-sm font-semibold text-slate-700 sm:w-auto"
                             >
                                 Cancel
                             </button>
@@ -1999,7 +2003,7 @@ function Trash() {
                                 disabled={
                                     actionLoading
                                 }
-                                className="w-full rounded-full bg-blue-500 px-5 py-2.5 text-sm font-semibold text-white disabled:opacity-50 sm:w-auto"
+                                className="w-full rounded-full bg-blue-500 px-4 sm:px-5 py-2 sm:py-2.5 text-xs sm:text-sm font-semibold text-white disabled:opacity-50 sm:w-auto"
                             >
                                 Restore All
                             </button>
@@ -2013,21 +2017,22 @@ function Trash() {
             )}
 
 
+            {/* Empty Trash Confirmation Modal - Responsive */}
             {showEmptyConfirm && (
 
-                <div className="fixed inset-0 z-[110] flex items-center justify-center overflow-y-auto bg-black/40 p-4 backdrop-blur-md">
+                <div className="fixed inset-0 z-[110] flex items-center justify-center overflow-y-auto bg-black/40 p-3 sm:p-4 backdrop-blur-md">
 
-                    <div className="my-auto w-full max-w-md rounded-[28px] bg-white p-5 shadow-2xl sm:p-7">
+                    <div className="my-auto w-full max-w-md overflow-hidden rounded-[24px] sm:rounded-[28px] bg-white p-4 sm:p-7 shadow-2xl">
 
 
-                        <h2 className="text-xl font-bold text-[#1d1d1f]">
+                        <h2 className="text-lg sm:text-xl font-bold text-[#1d1d1f]">
 
                             Empty Trash?
 
                         </h2>
 
 
-                        <p className="mt-3 text-sm leading-6 text-[#6e6e73]">
+                        <p className="mt-2 sm:mt-3 text-xs sm:text-sm leading-5 sm:leading-6 text-[#6e6e73]">
 
                             All items will be permanently deleted.
                             This action cannot be undone.
@@ -2035,7 +2040,7 @@ function Trash() {
                         </p>
 
 
-                        <div className="mt-7 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
+                        <div className="mt-5 sm:mt-7 flex flex-col-reverse gap-2 sm:gap-3 sm:flex-row sm:justify-end">
 
 
                             <button
@@ -2044,7 +2049,7 @@ function Trash() {
                                         false
                                     )
                                 }
-                                className="w-full rounded-full bg-slate-100 px-5 py-2.5 text-sm font-semibold text-slate-700 sm:w-auto"
+                                className="w-full rounded-full bg-slate-100 px-4 sm:px-5 py-2 sm:py-2.5 text-xs sm:text-sm font-semibold text-slate-700 sm:w-auto"
                             >
                                 Cancel
                             </button>
@@ -2057,7 +2062,7 @@ function Trash() {
                                 disabled={
                                     actionLoading
                                 }
-                                className="w-full rounded-full bg-[#ff3b30] px-5 py-2.5 text-sm font-semibold text-white disabled:opacity-50 sm:w-auto"
+                                className="w-full rounded-full bg-[#ff3b30] px-4 sm:px-5 py-2 sm:py-2.5 text-xs sm:text-sm font-semibold text-white disabled:opacity-50 sm:w-auto"
                             >
                                 Empty Trash
                             </button>

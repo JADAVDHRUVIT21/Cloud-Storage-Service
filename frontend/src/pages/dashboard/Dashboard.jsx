@@ -36,6 +36,7 @@ import {
   FaLock,
   FaEnvelope,
 } from "react-icons/fa";
+import { Files } from "lucide-react";
 
 import api from "../../services/api";
 import { useAuth } from "../../context/AuthContext";
@@ -128,6 +129,9 @@ function Dashboard() {
 
   // ========== LOGOUT CONFIRMATION STATE ==========
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
+
+  // ========== LOGOUT ANIMATION STATE ==========
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
 
   // ========== DOWNLOAD ABORT CONTROLLER ==========
   const [downloadAbortController, setDownloadAbortController] = useState(null);
@@ -240,14 +244,14 @@ function Dashboard() {
     const category = getFileCategory(file);
 
     if (category === "image") {
-      return <FaImage className="text-lg text-purple-500" />;
+      return <FaImage className="text-base sm:text-lg text-purple-500" />;
     }
 
     if (category === "video") {
-      return <FaVideo className="text-lg text-red-500" />;
+      return <FaVideo className="text-base sm:text-lg text-red-500" />;
     }
 
-    return <FaFileAlt className="text-lg text-blue-500" />;
+    return <FaFileAlt className="text-base sm:text-lg text-blue-500" />;
   };
 
   const imageCount = useMemo(() => {
@@ -295,7 +299,6 @@ function Dashboard() {
       return;
     }
 
-    // Check file size (max 100MB)
     if (selected.size > 100 * 1024 * 1024) {
       setError("File size exceeds 100MB limit.");
       event.target.value = "";
@@ -311,12 +314,6 @@ function Dashboard() {
 
       const formData = new FormData();
       formData.append("file", selected);
-
-      console.log("Uploading file:", {
-        name: selected.name,
-        size: selected.size,
-        type: selected.type
-      });
 
       const response = await api.post("/files/upload", formData, {
         headers: {
@@ -334,7 +331,6 @@ function Dashboard() {
 
       setUploadProgress(100);
 
-      // Check if upload was successful
       if (response.status === 200 || response.status === 201) {
         setSuccess("File uploaded successfully.");
         await loadDashboardData();
@@ -350,8 +346,7 @@ function Dashboard() {
     } catch (err) {
       console.error("Upload error:", err);
       console.error("Server response:", err.response?.data);
-      
-      // Extract detailed error message
+
       let errorMessage = "File upload failed.";
       if (err.response?.data?.detail) {
         errorMessage = err.response.data.detail;
@@ -360,7 +355,7 @@ function Dashboard() {
       } else if (err.message) {
         errorMessage = err.message;
       }
-      
+
       setError(errorMessage);
       setUploadProgress(0);
       setUploadingFile(null);
@@ -453,7 +448,6 @@ function Dashboard() {
 
   const handleDownload = async (file) => {
     try {
-      // Create abort controller
       const controller = new AbortController();
       setDownloadAbortController(controller);
 
@@ -471,7 +465,6 @@ function Dashboard() {
             );
             setDownloadProgress(percentage);
           } else {
-            // For files where total size is unknown, show a spinning indicator
             setDownloadProgress(0);
           }
         },
@@ -960,25 +953,22 @@ function Dashboard() {
       setProfileError("");
       setProfileSuccess("");
 
-      // FastAPI endpoint: PUT /api/v1/me
       const response = await api.put("/me", {
         full_name: newFullName.trim(),
       });
 
-      // Update the user using the updateUser function from AuthContext
       if (response.data) {
         updateUser({ full_name: response.data.full_name || newFullName.trim() });
       }
 
       setProfileSuccess("Name updated successfully.");
       setEditName(false);
-      
-      // Reload dashboard to refresh user data
+
       await loadDashboardData();
     } catch (err) {
       console.error("Update name error:", err);
       console.error("Error details:", err.response?.data);
-      
+
       setProfileError(
         err.response?.data?.detail ||
         err.response?.data?.message ||
@@ -1012,7 +1002,6 @@ function Dashboard() {
       setProfileError("");
       setProfileSuccess("");
 
-      // FastAPI endpoint: PUT /api/v1/me/password
       await api.put("/me/password", {
         current_password: currentPassword,
         new_password: newPassword,
@@ -1026,7 +1015,7 @@ function Dashboard() {
     } catch (err) {
       console.error("Update password error:", err);
       console.error("Error details:", err.response?.data);
-      
+
       setProfileError(
         err.response?.data?.detail ||
         err.response?.data?.message ||
@@ -1037,16 +1026,23 @@ function Dashboard() {
     }
   };
 
+  // ========== UPDATED LOGOUT FUNCTION WITH ANIMATION ==========
   const handleLogout = async () => {
+    setShowLogoutConfirm(false);
+    setIsLoggingOut(true);
+
     try {
-      // Call logout API if needed
       await api.post("/auth/logout");
     } catch (err) {
       console.error("Logout error:", err);
     }
-    setShowLogoutConfirm(false);
-    logout();
-    navigate("/login");
+
+    // Show animation for 2 seconds before redirecting
+    setTimeout(() => {
+      logout();
+      setIsLoggingOut(false);
+      navigate("/login");
+    }, 2000);
   };
 
   const handleSidebarClick = (menu) => {
@@ -1065,14 +1061,144 @@ function Dashboard() {
     }
   };
 
-  if (loading) {
-    return (
-      <div className="flex min-h-screen items-center justify-center bg-slate-100">
-        <div className="text-lg font-semibold text-slate-600">
-          Loading CloudVault...
+  // ========== LOADING OVERLAY ==========
+  const LoadingOverlay = () => (
+    <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-gradient-to-br from-slate-950 via-blue-950 to-slate-900">
+      <div className="flex flex-col items-center px-4">
+        <div className="relative mb-6 sm:mb-8">
+          <div className="absolute inset-0 animate-ping rounded-full bg-blue-500/20 blur-2xl"></div>
+          <div className="relative flex h-24 w-24 sm:h-28 sm:w-28 md:h-32 md:w-32 items-center justify-center rounded-full bg-gradient-to-br from-blue-600 to-purple-600 shadow-2xl shadow-blue-500/50">
+            <FaCloud className="text-3xl sm:text-4xl md:text-5xl text-white animate-bounce" />
+          </div>
+        </div>
+
+        <h2 className="text-xl sm:text-2xl md:text-3xl font-bold text-white mb-1 sm:mb-2 animate-pulse text-center">
+          CloudVault
+        </h2>
+        <p className="text-blue-200/80 text-sm sm:text-base md:text-lg text-center">
+          Loading your files...
+        </p>
+
+        <div className="mt-4 sm:mt-6 flex gap-1.5 sm:gap-2">
+          <span className="h-2 w-2 sm:h-2.5 sm:w-2.5 md:h-3 md:w-3 rounded-full bg-blue-400 animate-bounce [animation-delay:-0.3s]"></span>
+          <span className="h-2 w-2 sm:h-2.5 sm:w-2.5 md:h-3 md:w-3 rounded-full bg-blue-400 animate-bounce [animation-delay:-0.15s]"></span>
+          <span className="h-2 w-2 sm:h-2.5 sm:w-2.5 md:h-3 md:w-3 rounded-full bg-blue-400 animate-bounce"></span>
+        </div>
+
+        <div className="mt-6 sm:mt-8 w-32 sm:w-40 md:w-48 h-1 rounded-full bg-white/10 overflow-hidden">
+          <div className="h-full w-full rounded-full bg-gradient-to-r from-blue-400 to-purple-500 animate-[loading_1.5s_ease-in-out_infinite]"></div>
+        </div>
+
+        <div className="absolute inset-0 overflow-hidden pointer-events-none">
+          <div className="absolute -top-20 -left-20 text-white/5 text-[100px] sm:text-[150px] md:text-[200px] animate-float">☁️</div>
+          <div className="absolute -bottom-20 -right-20 text-white/5 text-[100px] sm:text-[150px] md:text-[200px] animate-float-delayed">☁️</div>
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-white/5 text-[150px] sm:text-[200px] md:text-[300px] animate-spin-slow">☁️</div>
         </div>
       </div>
-    );
+
+      <style>{`
+        @keyframes loading {
+          0% { transform: translateX(-100%); }
+          100% { transform: translateX(100%); }
+        }
+        @keyframes float {
+          0%, 100% { transform: translateY(0px) rotate(0deg); }
+          50% { transform: translateY(-30px) rotate(5deg); }
+        }
+        @keyframes float-delayed {
+          0%, 100% { transform: translateY(0px) rotate(0deg); }
+          50% { transform: translateY(30px) rotate(-5deg); }
+        }
+        @keyframes spin-slow {
+          0% { transform: translate(-50%, -50%) rotate(0deg) scale(1); }
+          50% { transform: translate(-50%, -50%) rotate(180deg) scale(1.1); }
+          100% { transform: translate(-50%, -50%) rotate(360deg) scale(1); }
+        }
+        .animate-float {
+          animation: float 6s ease-in-out infinite;
+        }
+        .animate-float-delayed {
+          animation: float-delayed 8s ease-in-out infinite;
+        }
+        .animate-spin-slow {
+          animation: spin-slow 20s linear infinite;
+        }
+      `}</style>
+    </div>
+  );
+
+  // ========== LOGOUT ANIMATION OVERLAY ==========
+  const LogoutOverlay = () => (
+    <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-gradient-to-br from-slate-950 via-blue-950 to-slate-900">
+      <div className="flex flex-col items-center px-4">
+        <div className="relative mb-6 sm:mb-8">
+          <div className="absolute inset-0 animate-ping rounded-full bg-red-500/20 blur-2xl"></div>
+          <div className="relative flex h-24 w-24 sm:h-28 sm:w-28 md:h-32 md:w-32 items-center justify-center rounded-full bg-gradient-to-br from-red-600 to-red-800 shadow-2xl shadow-red-500/50">
+            <FaCloud className="text-3xl sm:text-4xl md:text-5xl text-white animate-pulse" />
+          </div>
+        </div>
+
+        <h2 className="text-xl sm:text-2xl md:text-3xl font-bold text-white mb-1 sm:mb-2 animate-pulse text-center">
+          CloudVault
+        </h2>
+        <p className="text-red-200/80 text-sm sm:text-base md:text-lg text-center">
+          Logging out...
+        </p>
+
+        <div className="mt-4 sm:mt-6 flex gap-1.5 sm:gap-2">
+          <span className="h-2 w-2 sm:h-2.5 sm:w-2.5 md:h-3 md:w-3 rounded-full bg-red-400 animate-bounce [animation-delay:-0.3s]"></span>
+          <span className="h-2 w-2 sm:h-2.5 sm:w-2.5 md:h-3 md:w-3 rounded-full bg-red-400 animate-bounce [animation-delay:-0.15s]"></span>
+          <span className="h-2 w-2 sm:h-2.5 sm:w-2.5 md:h-3 md:w-3 rounded-full bg-red-400 animate-bounce"></span>
+        </div>
+
+        <div className="mt-6 sm:mt-8 w-32 sm:w-40 md:w-48 h-1 rounded-full bg-white/10 overflow-hidden">
+          <div className="h-full w-full rounded-full bg-gradient-to-r from-red-400 to-red-600 animate-[loading_1.5s_ease-in-out_infinite]"></div>
+        </div>
+
+        <div className="absolute inset-0 overflow-hidden pointer-events-none">
+          <div className="absolute -top-20 -left-20 text-white/5 text-[100px] sm:text-[150px] md:text-[200px] animate-float">☁️</div>
+          <div className="absolute -bottom-20 -right-20 text-white/5 text-[100px] sm:text-[150px] md:text-[200px] animate-float-delayed">☁️</div>
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-white/5 text-[150px] sm:text-[200px] md:text-[300px] animate-spin-slow">☁️</div>
+        </div>
+      </div>
+
+      <style>{`
+        @keyframes loading {
+          0% { transform: translateX(-100%); }
+          100% { transform: translateX(100%); }
+        }
+        @keyframes float {
+          0%, 100% { transform: translateY(0px) rotate(0deg); }
+          50% { transform: translateY(-30px) rotate(5deg); }
+        }
+        @keyframes float-delayed {
+          0%, 100% { transform: translateY(0px) rotate(0deg); }
+          50% { transform: translateY(30px) rotate(-5deg); }
+        }
+        @keyframes spin-slow {
+          0% { transform: translate(-50%, -50%) rotate(0deg) scale(1); }
+          50% { transform: translate(-50%, -50%) rotate(180deg) scale(1.1); }
+          100% { transform: translate(-50%, -50%) rotate(360deg) scale(1); }
+        }
+        .animate-float {
+          animation: float 6s ease-in-out infinite;
+        }
+        .animate-float-delayed {
+          animation: float-delayed 8s ease-in-out infinite;
+        }
+        .animate-spin-slow {
+          animation: spin-slow 20s linear infinite;
+        }
+      `}</style>
+    </div>
+  );
+
+  if (loading) {
+    return <LoadingOverlay />;
+  }
+
+  if (isLoggingOut) {
+    return <LogoutOverlay />;
   }
 
   return (
@@ -1086,71 +1212,70 @@ function Dashboard() {
       />
 
       {success && (
-        <div className="fixed right-4 top-4 z-[100] max-w-sm rounded-xl bg-green-600 px-5 py-3 text-sm font-medium text-white shadow-xl">
+        <div className="fixed right-3 sm:right-4 top-3 sm:top-4 z-[100] max-w-[calc(100vw-2rem)] sm:max-w-sm rounded-xl bg-green-600 px-3 sm:px-5 py-2 sm:py-3 text-xs sm:text-sm font-medium text-white shadow-xl">
           <div className="break-words">{success}</div>
         </div>
       )}
 
       {error && (
-        <div className="fixed right-4 top-4 z-[100] max-w-sm rounded-xl bg-red-500 px-5 py-3 text-sm font-medium text-white shadow-xl">
+        <div className="fixed right-3 sm:right-4 top-3 sm:top-4 z-[100] max-w-[calc(100vw-2rem)] sm:max-w-sm rounded-xl bg-red-500 px-3 sm:px-5 py-2 sm:py-3 text-xs sm:text-sm font-medium text-white shadow-xl">
           <div className="break-words">{error}</div>
         </div>
       )}
 
-      {/* ========== UPLOAD PROGRESS MODAL (iOS/macOS style) ========== */}
+      {/* Upload Progress Modal */}
       {isUploading && uploadingFile && (
         <div className="fixed inset-0 z-[110] flex items-center justify-center bg-black/50 px-4 backdrop-blur-sm">
-          <div className="w-full max-w-sm overflow-hidden rounded-3xl bg-white/95 shadow-2xl backdrop-blur-lg">
-            <div className="px-6 pb-6 pt-8">
+          <div className="w-full max-w-[280px] sm:max-w-sm overflow-hidden rounded-2xl sm:rounded-3xl bg-white/95 shadow-2xl backdrop-blur-lg">
+            <div className="px-4 sm:px-6 pb-4 sm:pb-6 pt-6 sm:pt-8">
               <div className="flex flex-col items-center text-center">
-                <div className="relative mb-4">
-                  <div className="flex h-16 w-16 items-center justify-center rounded-full bg-blue-100">
-                    <FaCloudUploadAlt className="text-3xl text-blue-600" />
+                <div className="relative mb-3 sm:mb-4">
+                  <div className="flex h-14 w-14 sm:h-16 sm:w-16 items-center justify-center rounded-full bg-blue-100">
+                    <FaCloudUploadAlt className="text-2xl sm:text-3xl text-blue-600" />
                   </div>
                   {uploadProgress === 100 && (
-                    <div className="absolute -right-2 -top-2 flex h-7 w-7 items-center justify-center rounded-full bg-green-500 text-white text-xs font-bold">
+                    <div className="absolute -right-1 -top-1 sm:-right-2 sm:-top-2 flex h-5 w-5 sm:h-7 sm:w-7 items-center justify-center rounded-full bg-green-500 text-white text-[8px] sm:text-xs font-bold">
                       ✓
                     </div>
                   )}
                 </div>
 
-                <h3 className="text-lg font-bold text-slate-800">
+                <h3 className="text-base sm:text-lg font-bold text-slate-800">
                   {uploadProgress === 100 ? "Upload Complete" : "Uploading File"}
                 </h3>
 
-                <p className="mt-1 text-sm text-slate-500">
+                <p className="mt-1 text-xs sm:text-sm text-slate-500 truncate max-w-[200px] sm:max-w-full">
                   {uploadProgress === 100
                     ? "Your file has been uploaded successfully"
                     : uploadingFile.name}
                 </p>
 
-                <div className="mt-4 w-full">
-                  <div className="mb-2 flex items-center justify-between">
-                    <span className="text-xs font-medium text-slate-500">
+                <div className="mt-3 sm:mt-4 w-full">
+                  <div className="mb-1.5 sm:mb-2 flex items-center justify-between">
+                    <span className="text-[10px] sm:text-xs font-medium text-slate-500">
                       {formatBytes(uploadingFile.size)}
                     </span>
-                    <span className="text-sm font-bold text-blue-600">
+                    <span className="text-xs sm:text-sm font-bold text-blue-600">
                       {uploadProgress}%
                     </span>
                   </div>
 
-                  <div className="h-2 overflow-hidden rounded-full bg-slate-200">
+                  <div className="h-1.5 sm:h-2 overflow-hidden rounded-full bg-slate-200">
                     <div
-                      className="h-full rounded-full bg-blue-600 transition-all duration-300"
+                      className="h-full rounded-full transition-all duration-300"
                       style={{
                         width: `${uploadProgress}%`,
-                        background:
-                          uploadProgress === 100
-                            ? "linear-gradient(to right, #22c55e, #16a34a)"
-                            : "linear-gradient(to right, #3b82f6, #2563eb)",
+                        background: uploadProgress === 100
+                          ? "linear-gradient(to right, #22c55e, #16a34a)"
+                          : "linear-gradient(to right, #3b82f6, #2563eb)",
                       }}
                     />
                   </div>
                 </div>
 
                 {uploadProgress < 100 && (
-                  <div className="mt-5 w-full">
-                    <div className="flex justify-between text-xs text-slate-400">
+                  <div className="mt-3 sm:mt-5 w-full">
+                    <div className="flex justify-between text-[10px] sm:text-xs text-slate-400">
                       <span>Uploading...</span>
                       <span className="animate-pulse">⏳</span>
                     </div>
@@ -1158,8 +1283,8 @@ function Dashboard() {
                 )}
 
                 {uploadProgress === 100 && (
-                  <div className="mt-5 w-full">
-                    <div className="flex justify-center text-xs text-green-600 font-medium">
+                  <div className="mt-3 sm:mt-5 w-full">
+                    <div className="flex justify-center text-[10px] sm:text-xs text-green-600 font-medium">
                       ✓ Done
                     </div>
                   </div>
@@ -1172,521 +1297,401 @@ function Dashboard() {
 
       <div className="flex min-h-screen">
 
-        <aside className="fixed left-0 top-0 z-40 hidden h-screen w-[215px] flex-col border-r border-slate-200 bg-white md:flex">
+        {/* Sidebar - Hidden on mobile, shown on md+ */}
+        <aside className="fixed left-0 top-0 z-40 hidden md:flex h-screen w-[200px] lg:w-[215px] flex-col border-r border-slate-200 bg-white">
 
-          <div className="flex items-center gap-3 border-b border-slate-200 px-5 py-4">
-
-            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-blue-600 shadow-lg shadow-blue-200">
-              <FaCloud className="text-sm text-white" />
+          <div className="flex items-center gap-2 lg:gap-3 border-b border-slate-200 px-3 lg:px-5 py-3 lg:py-4">
+            <div className="flex h-8 w-8 lg:h-9 lg:w-9 items-center justify-center rounded-xl bg-blue-600 shadow-lg shadow-blue-200">
+              <FaCloud className="text-xs lg:text-sm text-white" />
             </div>
-
             <div>
-              <h1 className="font-bold text-slate-800">
+              <h1 className="text-sm lg:text-base font-bold text-slate-800">
                 CloudVault
               </h1>
-
-              <p className="text-[10px] text-slate-500">
+              <p className="text-[8px] lg:text-[10px] text-slate-500">
                 Cloud Storage
               </p>
             </div>
-
           </div>
 
-          <div className="px-3 pt-5">
-
+          <div className="px-2 lg:px-3 pt-3 lg:pt-5">
             <button
               type="button"
               onClick={handleUploadClick}
               disabled={uploading}
-              className="flex w-full items-center justify-center gap-2 rounded-xl bg-blue-600 px-4 py-3 text-sm font-semibold text-white shadow-md shadow-blue-200 transition hover:bg-blue-700 disabled:opacity-60"
+              className="flex w-full items-center justify-center gap-2 rounded-xl bg-blue-600 px-3 lg:px-4 py-2.5 lg:py-3 text-xs lg:text-sm font-semibold text-white shadow-md shadow-blue-200 transition hover:bg-blue-700 disabled:opacity-60"
             >
-              <FaCloudUploadAlt />
-
-              {uploading
-                ? "Uploading..."
-                : "Upload File"}
+              <FaCloudUploadAlt className="text-sm lg:text-base" />
+              {uploading ? "Uploading..." : "Upload File"}
             </button>
-
           </div>
 
-          <nav className="mt-5 space-y-2 px-3">
-
+          <nav className="mt-3 lg:mt-5 space-y-1 lg:space-y-2 px-2 lg:px-3">
             <button
               type="button"
               onClick={() => handleSidebarClick("drive")}
-              className={`flex w-full items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium transition ${activeMenu === "drive"
-                ? "bg-blue-50 text-blue-600"
-                : "text-slate-600 hover:bg-slate-100"
+              className={`flex w-full items-center gap-2 lg:gap-3 rounded-xl px-3 lg:px-4 py-2.5 lg:py-3 text-xs lg:text-sm font-medium transition ${activeMenu === "drive"
+                  ? "bg-blue-50 text-blue-600"
+                  : "text-slate-600 hover:bg-slate-100"
                 }`}
             >
-              <FaCloud />
+              <FaCloud className="text-sm lg:text-base" />
               My Drive
             </button>
 
             <button
               type="button"
               onClick={() => handleSidebarClick("recent")}
-              className={`flex w-full items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium transition ${activeMenu === "recent"
+              className={`flex w-full items-center gap-2 lg:gap-3 rounded-xl px-3 lg:px-4 py-2.5 lg:py-3 text-xs lg:text-sm font-medium transition ${activeMenu === "recent"
                   ? "bg-blue-50 text-blue-600"
                   : "text-slate-600 hover:bg-slate-100"
                 }`}
             >
-              <FaFolder />
+              <FaFolder className="text-sm lg:text-base" />
               All Files
             </button>
 
             <button
               type="button"
               onClick={() => handleSidebarClick("trash")}
-              className={`flex w-full items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium transition ${activeMenu === "trash"
-                ? "bg-blue-50 text-blue-600"
-                : "text-slate-600 hover:bg-slate-100"
+              className={`flex w-full items-center gap-2 lg:gap-3 rounded-xl px-3 lg:px-4 py-2.5 lg:py-3 text-xs lg:text-sm font-medium transition ${activeMenu === "trash"
+                  ? "bg-blue-50 text-blue-600"
+                  : "text-slate-600 hover:bg-slate-100"
                 }`}
             >
-              <FaTrash />
+              <FaTrash className="text-sm lg:text-base" />
               Trash
             </button>
-
           </nav>
 
-          <div className="mt-auto px-3 pb-4">
-
-            <div className="mb-4 rounded-2xl bg-slate-100 p-4">
-
-              <div className="mb-3 flex items-center justify-between">
-
-                <div className="flex items-center gap-2">
-                  <FaDatabase className="text-blue-600" />
-
-                  <span className="text-sm font-semibold text-slate-700">
+          <div className="mt-auto px-2 lg:px-3 pb-3 lg:pb-4">
+            <div className="mb-3 lg:mb-4 rounded-2xl bg-slate-100 p-3 lg:p-4">
+              <div className="mb-2 lg:mb-3 flex items-center justify-between">
+                <div className="flex items-center gap-1.5 lg:gap-2">
+                  <FaDatabase className="text-blue-600 text-sm lg:text-base" />
+                  <span className="text-xs lg:text-sm font-semibold text-slate-700">
                     Storage
                   </span>
                 </div>
-
-                <span className="text-[10px] text-slate-500">
+                <span className="text-[8px] lg:text-[10px] text-slate-500">
                   {formatBytes(storageLimit)}
                 </span>
-
               </div>
-
-              <div className="h-2 overflow-hidden rounded-full bg-slate-200">
-
+              <div className="h-1.5 lg:h-2 overflow-hidden rounded-full bg-slate-200">
                 <div
                   className="h-full rounded-full bg-blue-600 transition-all"
-                  style={{
-                    width: `${storagePercentage}%`,
-                  }}
+                  style={{ width: `${storagePercentage}%` }}
                 />
-
               </div>
-
-              <p className="mt-2 text-[10px] text-slate-500">
-                {formatBytes(storageUsed)} of{" "}
-                {formatBytes(storageLimit)} used
+              <p className="mt-1.5 lg:mt-2 text-[8px] lg:text-[10px] text-slate-500">
+                {formatBytes(storageUsed)} of {formatBytes(storageLimit)} used
               </p>
-
             </div>
 
-            <div className="flex items-center justify-between rounded-xl px-2 py-2">
-
+            <div className="flex items-center justify-between rounded-xl px-1 lg:px-2 py-1.5 lg:py-2">
               <button
                 type="button"
                 onClick={openProfile}
-                className="flex min-w-0 flex-1 items-center gap-3"
+                className="flex min-w-0 flex-1 items-center gap-2 lg:gap-3"
               >
-
-                <div className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full bg-blue-100 font-bold text-blue-600">
+                <div className="flex h-8 w-8 lg:h-9 lg:w-9 flex-shrink-0 items-center justify-center rounded-full bg-blue-100 font-bold text-blue-600 text-xs lg:text-sm">
                   {firstName.charAt(0).toUpperCase()}
                 </div>
-
                 <div className="min-w-0 text-left">
-
-                  <p className="truncate text-xs font-semibold text-slate-700 hover:text-blue-600 transition-colors">
+                  <p className="truncate text-[10px] lg:text-xs font-semibold text-slate-700 hover:text-blue-600 transition-colors">
                     {user?.full_name || "User"}
                   </p>
-
-                  <p className="truncate text-[10px] text-slate-400">
+                  <p className="truncate text-[8px] lg:text-[10px] text-slate-400">
                     {user?.email || ""}
                   </p>
-
                 </div>
-
               </button>
-
               <button
                 type="button"
                 onClick={() => setShowLogoutConfirm(true)}
-                className="text-xs font-medium text-red-500 hover:text-red-600 flex-shrink-0 ml-2"
+                className="text-[10px] lg:text-xs font-medium text-red-500 hover:text-red-600 flex-shrink-0 ml-1 lg:ml-2"
               >
                 Logout
               </button>
-
             </div>
-
           </div>
-
         </aside>
 
-        <main className="min-h-screen flex-1 pb-28 md:ml-[215px] md:pb-0">
+        <main className="min-h-screen flex-1 pb-24 md:ml-[200px] lg:ml-[215px] md:pb-0">
 
-          <header className="sticky top-0 z-20 flex min-h-[64px] items-center justify-between border-b border-slate-200 bg-white px-4 md:h-[72px] md:px-6">
-
-            <div className="mr-3 flex items-center gap-3 md:hidden">
-
-              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-600 shadow-md shadow-blue-200">
-                <FaCloud className="text-white" />
+          {/* Header */}
+          <header className="sticky top-0 z-20 flex min-h-[56px] sm:min-h-[64px] items-center justify-between border-b border-slate-200 bg-white px-3 sm:px-4 md:h-[68px] lg:h-[72px] md:px-6">
+            <div className="flex items-center gap-2 sm:gap-3 md:hidden">
+              <div className="flex h-8 w-8 sm:h-10 sm:w-10 items-center justify-center rounded-xl bg-blue-600 shadow-md shadow-blue-200">
+                <FaCloud className="text-white text-sm sm:text-base" />
               </div>
-
               <div>
-                <h1 className="text-sm font-bold text-slate-800">
+                <h1 className="text-xs sm:text-sm font-bold text-slate-800">
                   CloudVault
                 </h1>
-
-                <p className="text-[10px] text-slate-500">
+                <p className="text-[8px] sm:text-[10px] text-slate-500">
                   My Storage
                 </p>
               </div>
-
             </div>
 
-            <div className="relative flex-1 md:max-w-[520px]">
-
-              <FaSearch className="absolute left-4 top-1/2 -translate-y-1/2 text-sm text-slate-400" />
-
+            <div className="relative flex-1 max-w-[180px] sm:max-w-[300px] md:max-w-[400px] lg:max-w-[520px]">
+              <FaSearch className="absolute left-3 sm:left-4 top-1/2 -translate-y-1/2 text-xs sm:text-sm text-slate-400" />
               <input
                 type="text"
                 value={searchQuery}
-                onChange={(event) =>
-                  setSearchQuery(event.target.value)
-                }
+                onChange={(event) => setSearchQuery(event.target.value)}
                 placeholder="Search files..."
-                className="w-full rounded-xl bg-slate-100 py-3 pl-11 pr-4 text-sm text-slate-700 outline-none transition focus:ring-2 focus:ring-blue-200"
+                className="w-full rounded-xl bg-slate-100 py-2 sm:py-3 pl-8 sm:pl-11 pr-3 sm:pr-4 text-xs sm:text-sm text-slate-700 outline-none transition focus:ring-2 focus:ring-blue-200"
               />
-
             </div>
 
             <button
               type="button"
               onClick={openProfile}
-              className="ml-3 flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl border border-slate-200 text-slate-600 transition hover:bg-slate-100"
+              className="ml-2 sm:ml-3 flex h-8 w-8 sm:h-10 sm:w-10 flex-shrink-0 items-center justify-center rounded-xl border border-slate-200 text-slate-600 transition hover:bg-slate-100"
             >
-              <FaUser />
+              <FaUser className="text-xs sm:text-sm" />
             </button>
-
           </header>
 
-          <div className="p-4 sm:p-6">
+          <div className="p-3 sm:p-4 md:p-5 lg:p-6">
 
-            <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-
+            {/* Welcome Section */}
+            <div className="mb-4 sm:mb-6 flex flex-col gap-3 sm:gap-4 sm:flex-row sm:items-center sm:justify-between">
               <div>
-
-                <p className="mb-1 text-xs font-semibold uppercase tracking-wider text-blue-600">
+                <p className="text-[10px] sm:text-xs font-semibold uppercase tracking-wider text-blue-600">
                   CloudVault Dashboard
                 </p>
-
-                <h2 className="text-xl font-bold text-slate-800 sm:text-2xl">
+                <h2 className="text-lg sm:text-xl lg:text-2xl font-bold text-slate-800">
                   Welcome back, {firstName} 👋
                 </h2>
-
-                <p className="mt-1 text-sm text-slate-500">
+                <p className="mt-0.5 sm:mt-1 text-xs sm:text-sm text-slate-500">
                   Manage and organize all your files in one place.
                 </p>
-
               </div>
 
-              <div className="flex gap-3">
-
+              <div className="flex gap-2 sm:gap-3">
                 <button
                   type="button"
                   onClick={() => setShowCreateFolder(true)}
-                  className="flex items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
+                  className="flex items-center justify-center gap-1.5 sm:gap-2 rounded-xl border border-slate-200 bg-white px-3 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
                 >
-                  <FaPlus />
-
-                  <span className="hidden sm:inline">
-                    New Folder
-                  </span>
+                  <FaPlus className="text-xs sm:text-sm" />
+                  <span className="hidden xs:inline">New Folder</span>
                 </button>
 
                 <button
                   type="button"
                   onClick={handleUploadClick}
                   disabled={uploading}
-                  className="flex items-center justify-center gap-2 rounded-xl bg-blue-600 px-5 py-3 text-sm font-semibold text-white shadow-lg shadow-blue-200 transition hover:bg-blue-700 disabled:opacity-60"
+                  className="flex items-center justify-center gap-1.5 sm:gap-2 rounded-xl bg-blue-600 px-3 sm:px-5 py-2 sm:py-3 text-xs sm:text-sm font-semibold text-white shadow-lg shadow-blue-200 transition hover:bg-blue-700 disabled:opacity-60"
                 >
-                  <FaCloudUploadAlt />
-
-                  {uploading
-                    ? "Uploading..."
-                    : "Upload"}
+                  <FaCloudUploadAlt className="text-xs sm:text-sm" />
+                  {uploading ? "Uploading..." : "Upload"}
                 </button>
-
               </div>
-
             </div>
 
-            <div className="mb-6 grid grid-cols-2 gap-4 lg:grid-cols-4">
-
-              <div className="rounded-2xl bg-white p-4 shadow-sm sm:p-5">
+            {/* Stats Cards */}
+            <div className="mb-4 sm:mb-6 grid grid-cols-2 gap-2 sm:gap-3 md:gap-4 lg:grid-cols-4">
+              <div className="rounded-2xl bg-white p-3 sm:p-4 md:p-5 shadow-sm">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-xs font-medium text-slate-500">
+                    <p className="text-[10px] sm:text-xs font-medium text-slate-500">
                       Total Files
                     </p>
-
-                    <p className="mt-2 text-2xl font-bold text-slate-800">
+                    <p className="mt-1 sm:mt-2 text-xl sm:text-2xl font-bold text-slate-800">
                       {files.length}
                     </p>
                   </div>
-
-                  <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-blue-100 text-blue-600">
-                    <FaFileAlt />
+                  <div className="flex h-9 w-9 sm:h-11 sm:w-11 items-center justify-center rounded-xl bg-blue-100 text-blue-600">
+                    <FaFileAlt className="text-sm sm:text-base" />
                   </div>
                 </div>
               </div>
 
-              <div className="rounded-2xl bg-white p-4 shadow-sm sm:p-5">
+              <div className="rounded-2xl bg-white p-3 sm:p-4 md:p-5 shadow-sm">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-xs font-medium text-slate-500">
+                    <p className="text-[10px] sm:text-xs font-medium text-slate-500">
                       Images
                     </p>
-
-                    <p className="mt-2 text-2xl font-bold text-slate-800">
+                    <p className="mt-1 sm:mt-2 text-xl sm:text-2xl font-bold text-slate-800">
                       {imageCount}
                     </p>
                   </div>
-
-                  <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-purple-100 text-purple-600">
-                    <FaImage />
+                  <div className="flex h-9 w-9 sm:h-11 sm:w-11 items-center justify-center rounded-xl bg-purple-100 text-purple-600">
+                    <FaImage className="text-sm sm:text-base" />
                   </div>
                 </div>
               </div>
 
-              <div className="rounded-2xl bg-white p-4 shadow-sm sm:p-5">
+              <div className="rounded-2xl bg-white p-3 sm:p-4 md:p-5 shadow-sm">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-xs font-medium text-slate-500">
+                    <p className="text-[10px] sm:text-xs font-medium text-slate-500">
                       Documents
                     </p>
-
-                    <p className="mt-2 text-2xl font-bold text-slate-800">
+                    <p className="mt-1 sm:mt-2 text-xl sm:text-2xl font-bold text-slate-800">
                       {documentCount}
                     </p>
                   </div>
-
-                  <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-green-100 text-green-600">
-                    <FaFileAlt />
+                  <div className="flex h-9 w-9 sm:h-11 sm:w-11 items-center justify-center rounded-xl bg-green-100 text-green-600">
+                    <FaFileAlt className="text-sm sm:text-base" />
                   </div>
                 </div>
               </div>
 
-              <div className="rounded-2xl bg-white p-4 shadow-sm sm:p-5">
+              <div className="rounded-2xl bg-white p-3 sm:p-4 md:p-5 shadow-sm">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-xs font-medium text-slate-500">
+                    <p className="text-[10px] sm:text-xs font-medium text-slate-500">
                       Videos
                     </p>
-
-                    <p className="mt-2 text-2xl font-bold text-slate-800">
+                    <p className="mt-1 sm:mt-2 text-xl sm:text-2xl font-bold text-slate-800">
                       {videoCount}
                     </p>
                   </div>
-
-                  <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-red-100 text-red-600">
-                    <FaVideo />
+                  <div className="flex h-9 w-9 sm:h-11 sm:w-11 items-center justify-center rounded-xl bg-red-100 text-red-600">
+                    <FaVideo className="text-sm sm:text-base" />
                   </div>
                 </div>
               </div>
-
             </div>
 
-            <div className="mb-6 rounded-3xl bg-white p-5 shadow-sm">
-
-              <div className="mb-4 flex items-center justify-between">
-
+            {/* Storage Overview */}
+            <div className="mb-4 sm:mb-6 rounded-2xl sm:rounded-3xl bg-white p-4 sm:p-5 shadow-sm">
+              <div className="mb-3 sm:mb-4 flex items-center justify-between">
                 <div>
-
-                  <h3 className="font-bold text-slate-800">
+                  <h3 className="text-sm sm:text-base font-bold text-slate-800">
                     Storage Overview
                   </h3>
-
-                  <p className="mt-1 text-sm text-slate-500">
-                    {formatBytes(storageUsed)} used of{" "}
-                    {formatBytes(storageLimit)}
+                  <p className="mt-0.5 sm:mt-1 text-xs sm:text-sm text-slate-500">
+                    {formatBytes(storageUsed)} used of {formatBytes(storageLimit)}
                   </p>
-
                 </div>
-
-                <span className="text-lg font-bold text-blue-600">
+                <span className="text-base sm:text-lg font-bold text-blue-600">
                   {Math.round(storagePercentage)}%
                 </span>
-
               </div>
-
-              <div className="h-3 overflow-hidden rounded-full bg-slate-100">
-
+              <div className="h-2 sm:h-3 overflow-hidden rounded-full bg-slate-100">
                 <div
                   className="h-full rounded-full bg-blue-600 transition-all duration-500"
-                  style={{
-                    width: `${storagePercentage}%`,
-                  }}
+                  style={{ width: `${storagePercentage}%` }}
                 />
-
               </div>
-
             </div>
 
-            <div className="mb-6">
-
-              <div className="mb-4 flex items-center justify-between">
-
+            {/* Folders Section */}
+            <div className="mb-4 sm:mb-6">
+              <div className="mb-3 sm:mb-4 flex items-center justify-between">
                 <div>
-
-                  <h3 className="text-lg font-bold text-slate-800">
+                  <h3 className="text-base sm:text-lg font-bold text-slate-800">
                     My Folders
                   </h3>
-
-                  <p className="text-sm text-slate-500">
+                  <p className="text-xs sm:text-sm text-slate-500">
                     Organize your files
                   </p>
-
                 </div>
-
                 <button
                   type="button"
                   onClick={() => setShowCreateFolder(true)}
-                  className="text-sm font-semibold text-blue-600 hover:text-blue-700"
+                  className="text-xs sm:text-sm font-semibold text-blue-600 hover:text-blue-700"
                 >
                   + New Folder
                 </button>
-
               </div>
 
               {folders.length === 0 ? (
-
-                <div className="rounded-2xl border border-dashed border-slate-300 bg-white p-8 text-center">
-
-                  <FaFolder className="mx-auto mb-3 text-4xl text-slate-300" />
-
-                  <p className="font-semibold text-slate-600">
+                <div className="rounded-2xl border border-dashed border-slate-300 bg-white p-6 sm:p-8 text-center">
+                  <FaFolder className="mx-auto mb-2 sm:mb-3 text-3xl sm:text-4xl text-slate-300" />
+                  <p className="text-sm sm:text-base font-semibold text-slate-600">
                     No folders yet
                   </p>
-
-                  <p className="mt-1 text-sm text-slate-400">
+                  <p className="mt-0.5 sm:mt-1 text-xs sm:text-sm text-slate-400">
                     Create a folder to organize your files.
                   </p>
-
                   <button
                     type="button"
                     onClick={() => setShowCreateFolder(true)}
-                    className="mt-5 rounded-xl bg-blue-600 px-5 py-3 text-sm font-semibold text-white transition hover:bg-blue-700"
+                    className="mt-3 sm:mt-5 rounded-xl bg-blue-600 px-4 sm:px-5 py-2 sm:py-3 text-xs sm:text-sm font-semibold text-white transition hover:bg-blue-700"
                   >
                     Create Folder
                   </button>
-
                 </div>
-
               ) : (
-
-                <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5">
-
+                <div className="grid grid-cols-2 gap-2 sm:gap-3 md:gap-4 sm:grid-cols-3 lg:grid-cols-5">
                   {folders.map((folder, index) => (
-
                     <div
                       key={folder.id}
-                      className="group relative min-h-[140px] rounded-2xl bg-white p-4 shadow-sm transition duration-200 hover:-translate-y-1 hover:shadow-lg"
+                      className="group relative min-h-[110px] sm:min-h-[140px] rounded-2xl bg-white p-3 sm:p-4 shadow-sm transition duration-200 hover:-translate-y-1 hover:shadow-lg"
                     >
-
                       <button
                         type="button"
                         onClick={() =>
                           navigate(`/folders/${folder.id}`, {
-                            state: {
-                              folderName: folder.name,
-                            },
+                            state: { folderName: folder.name },
                           })
                         }
                         className="flex h-full w-full flex-col items-center justify-center"
                       >
-
-                        <div className="mb-3 flex h-16 w-16 items-center justify-center rounded-2xl bg-blue-50 transition group-hover:bg-blue-100">
-
-                          <FaFolder className="text-4xl text-blue-500 transition group-hover:scale-110" />
-
+                        <div className="mb-2 sm:mb-3 flex h-12 w-12 sm:h-16 sm:w-16 items-center justify-center rounded-2xl bg-blue-50 transition group-hover:bg-blue-100">
+                          <FaFolder className="text-2xl sm:text-4xl text-blue-500 transition group-hover:scale-110" />
                         </div>
-
-                        <p className="max-w-full truncate text-center text-sm font-semibold text-slate-700">
-
+                        <p className="max-w-full truncate text-center text-xs sm:text-sm font-semibold text-slate-700">
                           {folder.name}
-
                         </p>
-
                       </button>
 
-                      <div className="absolute right-3 top-3">
-
+                      <div className="absolute right-2 sm:right-3 top-2 sm:top-3">
                         <button
                           type="button"
                           onClick={(event) => {
                             event.stopPropagation();
-
                             setOpenFolderMenuId(
-                              openFolderMenuId === folder.id
-                                ? null
-                                : folder.id
+                              openFolderMenuId === folder.id ? null : folder.id
                             );
                           }}
-                          className="flex h-9 w-9 items-center justify-center rounded-xl bg-white text-slate-500 shadow-sm transition hover:bg-slate-100 hover:text-slate-700"
+                          className="flex h-7 w-7 sm:h-9 sm:w-9 items-center justify-center rounded-xl bg-white text-slate-500 shadow-sm transition hover:bg-slate-100 hover:text-slate-700"
                         >
-                          <FaEllipsisV />
+                          <FaEllipsisV className="text-xs sm:text-sm" />
                         </button>
 
                         {openFolderMenuId === folder.id && (
-
                           <div
-                            className={`absolute right-0 z-[60] w-52 overflow-hidden rounded-2xl border border-slate-200 bg-white py-2 shadow-2xl ${index >= folders.length - 2
-                                ? "bottom-11"
-                                : "top-11"
+                            className={`absolute right-0 z-[60] w-44 sm:w-52 overflow-hidden rounded-2xl border border-slate-200 bg-white py-2 shadow-2xl ${index >= folders.length - 2 ? "bottom-10 sm:bottom-11" : "top-10 sm:top-11"
                               }`}
                           >
-
                             <button
                               type="button"
                               onClick={() => {
                                 setOpenFolderMenuId(null);
-
                                 navigate(`/folders/${folder.id}`, {
-                                  state: {
-                                    folderName: folder.name,
-                                  },
+                                  state: { folderName: folder.name },
                                 });
                               }}
-                              className="flex w-full items-center gap-3 px-4 py-3 text-left text-sm font-medium text-blue-600 transition hover:bg-blue-50"
+                              className="flex w-full items-center gap-2 sm:gap-3 px-3 sm:px-4 py-2 sm:py-3 text-left text-xs sm:text-sm font-medium text-blue-600 transition hover:bg-blue-50"
                             >
-                              <FaFolder />
-
+                              <FaFolder className="text-sm sm:text-base" />
                               Open Folder
                             </button>
 
                             <button
                               type="button"
                               onClick={() => openRenameFolderModal(folder)}
-                              className="flex w-full items-center gap-3 px-4 py-3 text-left text-sm font-medium text-orange-500 transition hover:bg-orange-50"
+                              className="flex w-full items-center gap-2 sm:gap-3 px-3 sm:px-4 py-2 sm:py-3 text-left text-xs sm:text-sm font-medium text-orange-500 transition hover:bg-orange-50"
                             >
-                              <FaEdit />
-
+                              <FaEdit className="text-sm sm:text-base" />
                               Rename
                             </button>
 
                             <button
                               type="button"
                               onClick={() => openShareFolderModal(folder)}
-                              className="flex w-full items-center gap-3 px-4 py-3 text-left text-sm font-medium text-purple-600 transition hover:bg-purple-50"
+                              className="flex w-full items-center gap-2 sm:gap-3 px-3 sm:px-4 py-2 sm:py-3 text-left text-xs sm:text-sm font-medium text-purple-600 transition hover:bg-purple-50"
                             >
-                              <FaShareAlt />
-
+                              <FaShareAlt className="text-sm sm:text-base" />
                               Share
                             </button>
 
@@ -1694,13 +1699,11 @@ function Dashboard() {
                               type="button"
                               onClick={() => {
                                 setOpenFolderMenuId(null);
-
                                 handleFolderDownload(folder);
                               }}
-                              className="flex w-full items-center gap-3 px-4 py-3 text-left text-sm font-medium text-green-600 transition hover:bg-green-50"
+                              className="flex w-full items-center gap-2 sm:gap-3 px-3 sm:px-4 py-2 sm:py-3 text-left text-xs sm:text-sm font-medium text-green-600 transition hover:bg-green-50"
                             >
-                              <FaDownload />
-
+                              <FaDownload className="text-sm sm:text-base" />
                               Download
                             </button>
 
@@ -1709,164 +1712,125 @@ function Dashboard() {
                             <button
                               type="button"
                               onClick={() => confirmDeleteFolder(folder)}
-                              className="flex w-full items-center gap-3 px-4 py-3 text-left text-sm font-medium text-red-500 transition hover:bg-red-50"
+                              className="flex w-full items-center gap-2 sm:gap-3 px-3 sm:px-4 py-2 sm:py-3 text-left text-xs sm:text-sm font-medium text-red-500 transition hover:bg-red-50"
                             >
-                              <FaTrash />
-
+                              <FaTrash className="text-sm sm:text-base" />
                               Delete Folder
                             </button>
-
                           </div>
-
                         )}
-
                       </div>
-
                     </div>
-
                   ))}
-
                 </div>
-
               )}
-
             </div>
 
+            {/* Recent Files Section */}
             <div>
-
-              <div className="mb-4 flex items-center justify-between">
-
+              <div className="mb-3 sm:mb-4 flex items-center justify-between">
                 <div>
-
-                  <h3 className="text-lg font-bold text-slate-800">
-                    Recent Files
+                  <h3 className="text-base sm:text-lg font-bold text-slate-800">
+                    All Files
                   </h3>
-
-                  <p className="text-sm text-slate-500">
+                  <p className="text-xs sm:text-sm text-slate-500">
                     Your recently uploaded files
                   </p>
-
                 </div>
-
                 <button
                   type="button"
                   onClick={() => navigate("/files")}
-                  className="text-sm font-semibold text-blue-600"
+                  className="text-xs sm:text-sm font-semibold text-blue-600"
                 >
                   View All
                 </button>
-
               </div>
 
               {recentFiles.length === 0 ? (
-
-                <div className="rounded-2xl border border-dashed border-slate-300 bg-white p-10 text-center">
-
-                  <FaCloudUploadAlt className="mx-auto mb-4 text-4xl text-slate-300" />
-
-                  <p className="font-semibold text-slate-600">
+                <div className="rounded-2xl border border-dashed border-slate-300 bg-white p-8 sm:p-10 text-center">
+                  <FaCloudUploadAlt className="mx-auto mb-3 sm:mb-4 text-3xl sm:text-4xl text-slate-300" />
+                  <p className="text-sm sm:text-base font-semibold text-slate-600">
                     No files found
                   </p>
-
-                  <p className="mt-1 text-sm text-slate-400">
+                  <p className="mt-0.5 sm:mt-1 text-xs sm:text-sm text-slate-400">
                     Upload your first file to CloudVault.
                   </p>
-
                   <button
                     type="button"
                     onClick={handleUploadClick}
-                    className="mt-5 rounded-xl bg-blue-600 px-5 py-3 text-sm font-semibold text-white"
+                    className="mt-3 sm:mt-5 rounded-xl bg-blue-600 px-4 sm:px-5 py-2 sm:py-3 text-xs sm:text-sm font-semibold text-white"
                   >
                     Upload File
                   </button>
-
                 </div>
-
               ) : (
-
                 <div className="relative overflow-visible rounded-2xl bg-white shadow-sm">
-
                   {recentFiles.map((file, index) => (
-
                     <div
                       key={file.id}
-                      className="relative flex items-center gap-3 border-b border-slate-100 p-4 last:border-b-0"
+                      className="relative flex items-center gap-2 sm:gap-3 border-b border-slate-100 p-3 sm:p-4 last:border-b-0"
                     >
-
                       <button
                         type="button"
                         onClick={() => handlePreviewFile(file)}
-                        className="flex min-w-0 flex-1 items-center gap-3 text-left"
+                        className="flex min-w-0 flex-1 items-center gap-2 sm:gap-3 text-left"
                       >
-
-                        <div className="flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-xl bg-slate-100">
+                        <div className="flex h-9 w-9 sm:h-11 sm:w-11 flex-shrink-0 items-center justify-center rounded-xl bg-slate-100">
                           {getFileIcon(file)}
                         </div>
-
                         <div className="min-w-0 flex-1">
-
-                          <p className="truncate text-sm font-semibold text-slate-700">
+                          <p className="truncate text-xs sm:text-sm font-semibold text-slate-700">
                             {file.original_name}
                           </p>
-
-                          <p className="mt-1 text-xs text-slate-400">
+                          <p className="mt-0.5 sm:mt-1 text-[10px] sm:text-xs text-slate-400">
                             {formatBytes(file.size)}
                           </p>
-
                         </div>
-
                       </button>
 
                       <button
                         type="button"
                         onClick={() => handlePreviewFile(file)}
-                        className="hidden h-10 w-10 items-center justify-center rounded-xl text-blue-600 hover:bg-blue-50 sm:flex"
+                        className="hidden sm:flex h-8 w-8 sm:h-10 sm:w-10 items-center justify-center rounded-xl text-blue-600 hover:bg-blue-50"
                       >
-                        <FaEye />
+                        <FaEye className="text-xs sm:text-sm" />
                       </button>
 
                       <button
                         type="button"
                         onClick={() => handleDownload(file)}
-                        className="hidden h-10 w-10 items-center justify-center rounded-xl text-slate-600 hover:bg-slate-100 sm:flex"
+                        className="hidden sm:flex h-8 w-8 sm:h-10 sm:w-10 items-center justify-center rounded-xl text-slate-600 hover:bg-slate-100"
                       >
-                        <FaDownload />
+                        <FaDownload className="text-xs sm:text-sm" />
                       </button>
 
                       <div className="relative">
-
                         <button
                           type="button"
                           onClick={() =>
                             setOpenMenuId(
-                              openMenuId === file.id
-                                ? null
-                                : file.id
+                              openMenuId === file.id ? null : file.id
                             )
                           }
-                          className="flex h-10 w-10 items-center justify-center rounded-xl text-slate-500 hover:bg-slate-100"
+                          className="flex h-8 w-8 sm:h-10 sm:w-10 items-center justify-center rounded-xl text-slate-500 hover:bg-slate-100"
                         >
-                          <FaEllipsisV />
+                          <FaEllipsisV className="text-xs sm:text-sm" />
                         </button>
 
                         {openMenuId === file.id && (
-
                           <div
-                            className={`absolute right-0 z-50 w-48 overflow-hidden rounded-xl border border-slate-200 bg-white py-2 shadow-xl ${index >= recentFiles.length - 2
-                                ? "bottom-12"
-                                : "top-12"
+                            className={`absolute right-0 z-50 w-40 sm:w-48 overflow-hidden rounded-xl border border-slate-200 bg-white py-2 shadow-xl ${index >= recentFiles.length - 2 ? "bottom-10 sm:bottom-12" : "top-10 sm:top-12"
                               }`}
                           >
-
                             <button
                               type="button"
                               onClick={() => {
                                 setOpenMenuId(null);
                                 handlePreviewFile(file);
                               }}
-                              className="flex w-full items-center gap-3 px-4 py-3 text-left text-sm text-slate-600 hover:bg-slate-50"
+                              className="flex w-full items-center gap-2 sm:gap-3 px-3 sm:px-4 py-2 sm:py-3 text-left text-xs sm:text-sm text-slate-600 hover:bg-slate-50"
                             >
-                              <FaEye />
+                              <FaEye className="text-sm sm:text-base" />
                               Open
                             </button>
 
@@ -1876,356 +1840,257 @@ function Dashboard() {
                                 setOpenMenuId(null);
                                 handleDownload(file);
                               }}
-                              className="flex w-full items-center gap-3 px-4 py-3 text-left text-sm text-slate-600 hover:bg-slate-50"
+                              className="flex w-full items-center gap-2 sm:gap-3 px-3 sm:px-4 py-2 sm:py-3 text-left text-xs sm:text-sm text-slate-600 hover:bg-slate-50"
                             >
-                              <FaDownload />
+                              <FaDownload className="text-sm sm:text-base" />
                               Download
                             </button>
 
                             <button
                               type="button"
                               onClick={() => openRenameModal(file)}
-                              className="flex w-full items-center gap-3 px-4 py-3 text-left text-sm text-slate-600 hover:bg-slate-50"
+                              className="flex w-full items-center gap-2 sm:gap-3 px-3 sm:px-4 py-2 sm:py-3 text-left text-xs sm:text-sm text-slate-600 hover:bg-slate-50"
                             >
-                              <FaEdit />
+                              <FaEdit className="text-sm sm:text-base" />
                               Rename
                             </button>
 
                             <button
                               type="button"
                               onClick={() => openShareModal(file)}
-                              className="flex w-full items-center gap-3 px-4 py-3 text-left text-sm text-slate-600 hover:bg-slate-50"
+                              className="flex w-full items-center gap-2 sm:gap-3 px-3 sm:px-4 py-2 sm:py-3 text-left text-xs sm:text-sm text-slate-600 hover:bg-slate-50"
                             >
-                              <FaShareAlt />
+                              <FaShareAlt className="text-sm sm:text-base" />
                               Share
                             </button>
 
                             <button
                               type="button"
                               onClick={() => confirmDeleteFile(file)}
-                              className="flex w-full items-center gap-3 px-4 py-3 text-left text-sm text-red-500 hover:bg-red-50"
+                              className="flex w-full items-center gap-2 sm:gap-3 px-3 sm:px-4 py-2 sm:py-3 text-left text-xs sm:text-sm text-red-500 hover:bg-red-50"
                             >
-                              <FaTrash />
+                              <FaTrash className="text-sm sm:text-base" />
                               Move to Trash
                             </button>
-
                           </div>
-
                         )}
-
                       </div>
-
                     </div>
-
                   ))}
-
                 </div>
-
               )}
-
             </div>
-
           </div>
-
         </main>
-
       </div>
 
       {/* Bottom Navigation for Mobile */}
-      <div className="fixed bottom-0 left-0 right-0 z-40 border-t border-slate-200 bg-white/95 px-2 pb-[env(safe-area-inset-bottom)] backdrop-blur md:hidden">
-
-        <div className="grid h-[70px] grid-cols-5 items-center">
-
+      <div className="fixed bottom-0 left-0 right-0 z-40 border-t border-slate-200 bg-white/95 px-1 pb-[env(safe-area-inset-bottom)] backdrop-blur md:hidden">
+        <div className="grid h-[60px] sm:h-[70px] grid-cols-5 items-center">
           <button
             type="button"
             onClick={() => handleSidebarClick("drive")}
-            className={`flex flex-col items-center justify-center gap-1 text-[10px] font-medium ${activeMenu === "drive"
-              ? "text-blue-600"
-              : "text-slate-400"
+            className={`flex flex-col items-center justify-center gap-0.5 sm:gap-1 text-[8px] sm:text-[10px] font-medium ${activeMenu === "drive" ? "text-blue-600" : "text-slate-400"
               }`}
           >
-            <FaHome className="text-lg" />
+            <FaHome className="text-base sm:text-lg" />
             Home
           </button>
 
           <button
             type="button"
             onClick={() => handleSidebarClick("recent")}
-            className={`flex flex-col items-center justify-center gap-1 text-[10px] font-medium ${activeMenu === "recent"
-              ? "text-blue-600"
-              : "text-slate-400"
+            className={`flex flex-col items-center justify-center gap-0.5 sm:gap-1 text-[8px] sm:text-[10px] font-medium ${activeMenu === "recent" ? "text-blue-600" : "text-slate-400"
               }`}
           >
-            <FaClock className="text-lg" />
-            Recent
+            <Files className="w-5 h-5 sm:w-6 sm:h-6" strokeWidth={2} />
+            All Files
           </button>
 
           <button
             type="button"
             onClick={handleUploadClick}
-            className="-mt-8 flex flex-col items-center justify-center"
+            className="-mt-4 sm:-mt-8 flex flex-col items-center justify-center"
           >
-
-            <div className="flex h-14 w-14 items-center justify-center rounded-full bg-blue-600 text-xl text-white shadow-lg shadow-blue-300">
+            <div className="flex h-11 w-11 sm:h-14 sm:w-14 items-center justify-center rounded-full bg-blue-600 text-base sm:text-xl text-white shadow-lg shadow-blue-300">
               <FaPlus />
             </div>
-
-            <span className="mt-1 text-[10px] font-medium text-blue-600">
+            <span className="mt-0.5 sm:mt-1 text-[8px] sm:text-[10px] font-medium text-blue-600">
               Upload
             </span>
-
           </button>
 
           <button
             type="button"
             onClick={() => handleSidebarClick("trash")}
-            className={`flex flex-col items-center justify-center gap-1 text-[10px] font-medium ${activeMenu === "trash"
-              ? "text-blue-600"
-              : "text-slate-400"
+            className={`flex flex-col items-center justify-center gap-0.5 sm:gap-1 text-[8px] sm:text-[10px] font-medium ${activeMenu === "trash" ? "text-blue-600" : "text-slate-400"
               }`}
           >
-            <FaTrash className="text-lg" />
+            <FaTrash className="text-base sm:text-lg" />
             Trash
           </button>
 
           <button
             type="button"
             onClick={openProfile}
-            className={`flex flex-col items-center justify-center gap-1 text-[10px] font-medium text-slate-400`}
+            className="flex flex-col items-center justify-center gap-0.5 sm:gap-1 text-[8px] sm:text-[10px] font-medium text-slate-400"
           >
-            <FaUserCircle className="text-lg" />
+            <FaUserCircle className="text-base sm:text-lg" />
             Account
           </button>
-
         </div>
-
       </div>
 
+      {/* All Modals - Responsive */}
       {/* Create Folder Modal */}
       {showCreateFolder && (
-
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 px-4">
-
-          <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl">
-
-            <div className="mb-5 flex items-center justify-between">
-
-              <h3 className="text-lg font-bold text-slate-800">
+          <div className="w-full max-w-xs sm:max-w-md rounded-2xl bg-white p-5 sm:p-6 shadow-2xl">
+            <div className="mb-4 sm:mb-5 flex items-center justify-between">
+              <h3 className="text-base sm:text-lg font-bold text-slate-800">
                 Create New Folder
               </h3>
-
-              <button
-                type="button"
-                onClick={() => setShowCreateFolder(false)}
-              >
-                <FaTimes />
+              <button type="button" onClick={() => setShowCreateFolder(false)}>
+                <FaTimes className="text-sm sm:text-base" />
               </button>
-
             </div>
-
             <form onSubmit={handleCreateFolder}>
-
               <input
                 type="text"
                 value={folderName}
-                onChange={(event) =>
-                  setFolderName(event.target.value)
-                }
+                onChange={(event) => setFolderName(event.target.value)}
                 placeholder="Folder name"
                 autoFocus
-                className="w-full rounded-xl border border-slate-200 px-4 py-3 outline-none focus:border-blue-500"
+                className="w-full rounded-xl border border-slate-200 px-3 sm:px-4 py-2.5 sm:py-3 text-sm outline-none focus:border-blue-500"
               />
-
-              <div className="mt-5 flex justify-end gap-3">
-
+              <div className="mt-4 sm:mt-5 flex justify-end gap-2 sm:gap-3">
                 <button
                   type="button"
                   onClick={() => setShowCreateFolder(false)}
-                  className="rounded-xl px-4 py-2.5 text-sm font-semibold text-slate-600"
+                  className="rounded-xl px-3 sm:px-4 py-1.5 sm:py-2.5 text-xs sm:text-sm font-semibold text-slate-600"
                 >
                   Cancel
                 </button>
-
                 <button
                   type="submit"
-                  className="rounded-xl bg-blue-600 px-5 py-2.5 text-sm font-semibold text-white"
+                  className="rounded-xl bg-blue-600 px-4 sm:px-5 py-1.5 sm:py-2.5 text-xs sm:text-sm font-semibold text-white"
                 >
                   Create Folder
                 </button>
-
               </div>
-
             </form>
-
           </div>
-
         </div>
-
       )}
 
       {/* File Preview Modal */}
       {selectedFile && (
-
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 p-2 sm:p-6">
-
           <div className="relative flex h-[95vh] w-full max-w-6xl flex-col overflow-hidden rounded-2xl bg-white shadow-2xl">
-
-            <div className="flex items-center justify-between border-b border-slate-200 px-4 py-4 sm:px-5">
-
+            <div className="flex items-center justify-between border-b border-slate-200 px-3 sm:px-5 py-3 sm:py-4">
               <div className="min-w-0">
-
-                <p className="truncate font-semibold text-slate-800">
+                <p className="truncate text-sm sm:text-base font-semibold text-slate-800">
                   {selectedFile.original_name}
                 </p>
-
-                <p className="text-xs text-slate-500">
+                <p className="text-[10px] sm:text-xs text-slate-500">
                   {formatBytes(selectedFile.size)}
                 </p>
-
               </div>
-
               <button
                 type="button"
                 onClick={closePreview}
-                className="ml-4 flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl bg-slate-100 text-slate-600 hover:bg-red-50 hover:text-red-500"
+                className="ml-2 sm:ml-4 flex h-8 w-8 sm:h-10 sm:w-10 flex-shrink-0 items-center justify-center rounded-xl bg-slate-100 text-slate-600 hover:bg-red-50 hover:text-red-500"
               >
-                <FaTimes />
+                <FaTimes className="text-sm sm:text-base" />
               </button>
-
             </div>
-
             <div className="flex min-h-0 flex-1 items-center justify-center overflow-auto bg-slate-100 p-2 sm:p-6">
-
               {previewLoading && (
-
                 <div className="flex flex-col items-center">
-
-                  <div className="h-10 w-10 animate-spin rounded-full border-4 border-slate-200 border-t-blue-600" />
-
-                  <p className="mt-4 text-sm font-medium text-slate-600">
+                  <div className="h-8 w-8 sm:h-10 sm:w-10 animate-spin rounded-full border-4 border-slate-200 border-t-blue-600" />
+                  <p className="mt-3 sm:mt-4 text-xs sm:text-sm font-medium text-slate-600">
                     Opening file...
                   </p>
-
                 </div>
-
               )}
-
               {!previewLoading && previewError && (
-
                 <div className="text-center">
-
-                  <FaFileAlt className="mx-auto mb-4 text-5xl text-red-400" />
-
-                  <p className="font-semibold text-red-500">
+                  <FaFileAlt className="mx-auto mb-3 sm:mb-4 text-4xl sm:text-5xl text-red-400" />
+                  <p className="text-sm sm:text-base font-semibold text-red-500">
                     {previewError}
                   </p>
-
                 </div>
-
               )}
-
-              {!previewLoading && !previewError && previewUrl &&
-                selectedFile.mime_type?.startsWith("image/") && (
-
-                  <img
-                    src={previewUrl}
-                    alt={selectedFile.original_name}
-                    className="max-h-full max-w-full object-contain"
-                  />
-
-                )}
-
-              {!previewLoading && !previewError && previewUrl &&
-                selectedFile.mime_type?.startsWith("video/") && (
-
-                  <video
-                    src={previewUrl}
-                    controls
-                    className="max-h-full max-w-full"
-                  />
-
-                )}
-
-              {!previewLoading && !previewError && previewUrl &&
-                !selectedFile.mime_type?.startsWith("image/") &&
-                !selectedFile.mime_type?.startsWith("video/") && (
-
-                  <iframe
-                    title={selectedFile.original_name}
-                    src={previewUrl}
-                    className="h-full w-full border-0"
-                  />
-
-                )}
-
+              {!previewLoading && !previewError && previewUrl && selectedFile.mime_type?.startsWith("image/") && (
+                <img src={previewUrl} alt={selectedFile.original_name} className="max-h-full max-w-full object-contain" />
+              )}
+              {!previewLoading && !previewError && previewUrl && selectedFile.mime_type?.startsWith("video/") && (
+                <video src={previewUrl} controls className="max-h-full max-w-full" />
+              )}
+              {!previewLoading && !previewError && previewUrl && !selectedFile.mime_type?.startsWith("image/") && !selectedFile.mime_type?.startsWith("video/") && (
+                <iframe title={selectedFile.original_name} src={previewUrl} className="h-full w-full border-0" />
+              )}
             </div>
-
           </div>
-
         </div>
-
       )}
 
-      {/* File Download Progress Modal with Cancel Button */}
+      {/* Download Progress Modal */}
       {downloadFile && (
         <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/30 px-4 backdrop-blur-sm">
-          <div className="w-full max-w-sm overflow-hidden rounded-3xl bg-white shadow-2xl">
-            <div className="px-6 pb-6 pt-8">
+          <div className="w-full max-w-xs sm:max-w-sm overflow-hidden rounded-2xl sm:rounded-3xl bg-white shadow-2xl">
+            <div className="px-4 sm:px-6 pb-4 sm:pb-6 pt-6 sm:pt-8">
               <div className="flex flex-col items-center text-center">
-                <div className="relative mb-4">
-                  <div className="flex h-16 w-16 items-center justify-center rounded-full bg-blue-100">
+                <div className="relative mb-3 sm:mb-4">
+                  <div className="flex h-14 w-14 sm:h-16 sm:w-16 items-center justify-center rounded-full bg-blue-100">
                     {downloadProgress === 100 ? (
-                      <FaDownload className="text-3xl text-green-600" />
+                      <FaDownload className="text-2xl sm:text-3xl text-green-600" />
                     ) : downloadProgress === 0 && !downloadFile.size ? (
-                      <FaSpinner className="text-3xl text-blue-600 animate-spin" />
+                      <FaSpinner className="text-2xl sm:text-3xl text-blue-600 animate-spin" />
                     ) : (
-                      <FaDownload className="text-3xl text-blue-600" />
+                      <FaDownload className="text-2xl sm:text-3xl text-blue-600" />
                     )}
                   </div>
                   {downloadProgress === 100 && (
-                    <div className="absolute -right-2 -top-2 flex h-7 w-7 items-center justify-center rounded-full bg-green-500 text-white text-xs font-bold">
+                    <div className="absolute -right-1 -top-1 sm:-right-2 sm:-top-2 flex h-5 w-5 sm:h-7 sm:w-7 items-center justify-center rounded-full bg-green-500 text-white text-[8px] sm:text-xs font-bold">
                       ✓
                     </div>
                   )}
                 </div>
 
-                <h3 className="text-lg font-bold text-slate-800">
+                <h3 className="text-base sm:text-lg font-bold text-slate-800">
                   {downloadProgress === 100 ? "Download Complete" : "Downloading File"}
                 </h3>
 
-                <p className="mt-1 text-sm text-slate-500">
-                  {downloadProgress === 100
-                    ? "Your file has been downloaded successfully"
-                    : downloadFile.original_name}
+                <p className="mt-1 text-xs sm:text-sm text-slate-500 truncate max-w-[200px] sm:max-w-full">
+                  {downloadProgress === 100 ? "Your file has been downloaded successfully" : downloadFile.original_name}
                 </p>
 
-                <div className="mt-4 w-full">
-                  <div className="mb-2 flex items-center justify-between">
-                    <span className="text-xs font-medium text-slate-500">
+                <div className="mt-3 sm:mt-4 w-full">
+                  <div className="mb-1.5 sm:mb-2 flex items-center justify-between">
+                    <span className="text-[10px] sm:text-xs font-medium text-slate-500">
                       {downloadFile.size ? formatBytes(downloadFile.size) : "Preparing..."}
                     </span>
-                    <span className="text-sm font-bold text-blue-600">
+                    <span className="text-xs sm:text-sm font-bold text-blue-600">
                       {downloadProgress}%
                     </span>
                   </div>
-
-                  <div className="h-2 overflow-hidden rounded-full bg-slate-200">
+                  <div className="h-1.5 sm:h-2 overflow-hidden rounded-full bg-slate-200">
                     <div
                       className="h-full rounded-full transition-all duration-300"
                       style={{
                         width: `${downloadProgress}%`,
-                        background:
-                          downloadProgress === 100
-                            ? "linear-gradient(to right, #22c55e, #16a34a)"
-                            : "linear-gradient(to right, #3b82f6, #2563eb)",
+                        background: downloadProgress === 100
+                          ? "linear-gradient(to right, #22c55e, #16a34a)"
+                          : "linear-gradient(to right, #3b82f6, #2563eb)",
                       }}
                     />
                   </div>
                 </div>
 
                 {downloadProgress < 100 && (
-                  <div className="mt-5 w-full">
-                    <div className="flex justify-between text-xs text-slate-400">
+                  <div className="mt-3 sm:mt-5 w-full">
+                    <div className="flex justify-between text-[10px] sm:text-xs text-slate-400">
                       <span>Downloading...</span>
                       <span className="animate-pulse">⏳</span>
                     </div>
@@ -2233,19 +2098,18 @@ function Dashboard() {
                 )}
 
                 {downloadProgress === 100 && (
-                  <div className="mt-5 w-full">
-                    <div className="flex justify-center text-xs text-green-600 font-medium">
+                  <div className="mt-3 sm:mt-5 w-full">
+                    <div className="flex justify-center text-[10px] sm:text-xs text-green-600 font-medium">
                       ✓ Done
                     </div>
                   </div>
                 )}
 
-                {/* Cancel Button */}
                 {downloadProgress < 100 && (
                   <button
                     type="button"
                     onClick={cancelDownload}
-                    className="mt-6 w-full rounded-xl border border-red-200 bg-red-50 py-3 text-sm font-semibold text-red-600 transition hover:bg-red-100 active:scale-95"
+                    className="mt-4 sm:mt-6 w-full rounded-xl border border-red-200 bg-red-50 py-2.5 sm:py-3 text-xs sm:text-sm font-semibold text-red-600 transition hover:bg-red-100 active:scale-95"
                   >
                     Cancel Download
                   </button>
@@ -2258,7 +2122,7 @@ function Dashboard() {
                       setDownloadFile(null);
                       setDownloadProgress(0);
                     }}
-                    className="mt-6 w-full rounded-xl bg-blue-600 py-3 text-sm font-semibold text-white transition hover:bg-blue-700 active:scale-95"
+                    className="mt-4 sm:mt-6 w-full rounded-xl bg-blue-600 py-2.5 sm:py-3 text-xs sm:text-sm font-semibold text-white transition hover:bg-blue-700 active:scale-95"
                   >
                     Close
                   </button>
@@ -2269,721 +2133,495 @@ function Dashboard() {
         </div>
       )}
 
-      {/* File Delete Confirmation Modal */}
+      {/* Delete Confirmation Modal */}
       {fileToDelete && (
-
-        <div className="fixed inset-0 z-[70] flex items-end justify-center bg-black/40 px-4 pb-6 sm:items-center sm:pb-0">
-
-          <div className="w-full max-w-sm overflow-hidden rounded-3xl bg-white shadow-2xl">
-
-            <div className="px-6 pb-5 pt-7 text-center">
-
-              <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-red-100 text-xl text-red-500">
+        <div className="fixed inset-0 z-[70] flex items-end sm:items-center justify-center bg-black/40 px-4 pb-6 sm:pb-0">
+          <div className="w-full max-w-xs sm:max-w-sm overflow-hidden rounded-2xl sm:rounded-3xl bg-white shadow-2xl">
+            <div className="px-4 sm:px-6 pb-4 sm:pb-5 pt-6 sm:pt-7 text-center">
+              <div className="mx-auto mb-3 sm:mb-4 flex h-12 w-12 sm:h-14 sm:w-14 items-center justify-center rounded-full bg-red-100 text-base sm:text-xl text-red-500">
                 <FaTrash />
               </div>
-
-              <h3 className="text-lg font-bold text-slate-800">
+              <h3 className="text-base sm:text-lg font-bold text-slate-800">
                 Move to Trash?
               </h3>
-
-              <p className="mt-2 text-sm leading-6 text-slate-500">
+              <p className="mt-2 text-xs sm:text-sm leading-5 sm:leading-6 text-slate-500">
                 Are you sure you want to move
                 <br />
-
-                <span className="block max-w-[200px] mx-auto truncate font-semibold text-slate-700" title={fileToDelete.original_name}>
+                <span className="block max-w-[180px] sm:max-w-[200px] mx-auto truncate font-semibold text-slate-700" title={fileToDelete.original_name}>
                   {fileToDelete.original_name}
                 </span>
-
                 <br />
                 to Trash?
               </p>
-
             </div>
-
             <div className="border-t border-slate-200">
-
               <button
                 type="button"
                 disabled={deleting}
                 onClick={handleDeleteFile}
-                className="flex w-full items-center justify-center py-4 text-base font-semibold text-red-500 transition hover:bg-red-50 disabled:opacity-50"
+                className="flex w-full items-center justify-center py-3 sm:py-4 text-sm sm:text-base font-semibold text-red-500 transition hover:bg-red-50 disabled:opacity-50"
               >
-                {deleting
-                  ? "Deleting..."
-                  : "Move to Trash"}
+                {deleting ? "Deleting..." : "Move to Trash"}
               </button>
-
               <div className="border-t border-slate-200" />
-
               <button
                 type="button"
                 disabled={deleting}
                 onClick={() => setFileToDelete(null)}
-                className="flex w-full items-center justify-center py-4 text-base font-semibold text-blue-600 transition hover:bg-slate-50"
+                className="flex w-full items-center justify-center py-3 sm:py-4 text-sm sm:text-base font-semibold text-blue-600 transition hover:bg-slate-50"
               >
                 Cancel
               </button>
-
             </div>
-
           </div>
-
         </div>
-
       )}
 
-      {/* File Rename Modal */}
+      {/* Rename File Modal */}
       {renamingFile && (
-
         <div className="fixed inset-0 z-[70] flex items-center justify-center bg-black/40 px-4">
-
-          <div className="w-full max-w-md rounded-3xl bg-white p-6 shadow-2xl">
-
-            <div className="mb-5 flex items-center gap-3">
-
-              <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-blue-100 text-blue-600">
-                <FaEdit />
+          <div className="w-full max-w-xs sm:max-w-md rounded-2xl sm:rounded-3xl bg-white p-5 sm:p-6 shadow-2xl">
+            <div className="mb-4 sm:mb-5 flex items-center gap-3">
+              <div className="flex h-9 w-9 sm:h-11 sm:w-11 items-center justify-center rounded-xl bg-blue-100 text-blue-600">
+                <FaEdit className="text-sm sm:text-base" />
               </div>
-
               <div>
-
-                <h3 className="font-bold text-slate-800">
+                <h3 className="text-base sm:text-lg font-bold text-slate-800">
                   Rename File
                 </h3>
-
-                <p className="text-xs text-slate-500">
+                <p className="text-[10px] sm:text-xs text-slate-500">
                   Enter a new file name
                 </p>
-
               </div>
-
             </div>
-
             <form onSubmit={handleRenameFile}>
-
               <input
                 autoFocus
                 value={newFileName}
-                onChange={(event) =>
-                  setNewFileName(event.target.value)
-                }
-                className="w-full rounded-xl border border-slate-200 px-4 py-3 outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
+                onChange={(event) => setNewFileName(event.target.value)}
+                className="w-full rounded-xl border border-slate-200 px-3 sm:px-4 py-2.5 sm:py-3 text-sm outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
               />
-
-              <div className="mt-5 flex justify-end gap-3">
-
+              <div className="mt-4 sm:mt-5 flex justify-end gap-2 sm:gap-3">
                 <button
                   type="button"
                   onClick={() => {
                     setRenamingFile(null);
                     setNewFileName("");
                   }}
-                  className="rounded-xl px-5 py-3 text-sm font-semibold text-slate-600 hover:bg-slate-100"
+                  className="rounded-xl px-3 sm:px-5 py-1.5 sm:py-3 text-xs sm:text-sm font-semibold text-slate-600 hover:bg-slate-100"
                 >
                   Cancel
                 </button>
-
                 <button
                   type="submit"
                   disabled={renaming}
-                  className="rounded-xl bg-blue-600 px-5 py-3 text-sm font-semibold text-white disabled:opacity-60"
+                  className="rounded-xl bg-blue-600 px-4 sm:px-5 py-1.5 sm:py-3 text-xs sm:text-sm font-semibold text-white disabled:opacity-60"
                 >
-                  {renaming
-                    ? "Saving..."
-                    : "Rename"}
+                  {renaming ? "Saving..." : "Rename"}
                 </button>
-
               </div>
-
             </form>
-
           </div>
-
         </div>
-
       )}
 
-      {/* ========== FOLDER RENAME MODAL ========== */}
+      {/* Folder Rename Modal */}
       {renamingFolder && (
-
         <div className="fixed inset-0 z-[90] flex items-center justify-center bg-black/40 px-4">
-
-          <div className="w-full max-w-md rounded-3xl bg-white p-6 shadow-2xl">
-
-            <div className="mb-5 flex items-center gap-3">
-
-              <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-orange-100 text-orange-500">
-                <FaEdit />
+          <div className="w-full max-w-xs sm:max-w-md rounded-2xl sm:rounded-3xl bg-white p-5 sm:p-6 shadow-2xl">
+            <div className="mb-4 sm:mb-5 flex items-center gap-3">
+              <div className="flex h-9 w-9 sm:h-11 sm:w-11 items-center justify-center rounded-xl bg-orange-100 text-orange-500">
+                <FaEdit className="text-sm sm:text-base" />
               </div>
-
               <div>
-
-                <h3 className="font-bold text-slate-800">
+                <h3 className="text-base sm:text-lg font-bold text-slate-800">
                   Rename Folder
                 </h3>
-
-                <p className="text-xs text-slate-500">
+                <p className="text-[10px] sm:text-xs text-slate-500">
                   Enter a new folder name
                 </p>
-
               </div>
-
             </div>
-
             <form onSubmit={handleRenameFolder}>
-
               <input
                 autoFocus
                 value={newFolderName}
-                onChange={(event) =>
-                  setNewFolderName(event.target.value)
-                }
-                className="w-full rounded-xl border border-slate-200 px-4 py-3 outline-none focus:border-orange-500 focus:ring-4 focus:ring-orange-100"
+                onChange={(event) => setNewFolderName(event.target.value)}
+                className="w-full rounded-xl border border-slate-200 px-3 sm:px-4 py-2.5 sm:py-3 text-sm outline-none focus:border-orange-500 focus:ring-4 focus:ring-orange-100"
               />
-
-              <div className="mt-5 flex justify-end gap-3">
-
+              <div className="mt-4 sm:mt-5 flex justify-end gap-2 sm:gap-3">
                 <button
                   type="button"
                   onClick={() => {
                     setRenamingFolder(null);
                     setNewFolderName("");
                   }}
-                  className="rounded-xl px-5 py-3 text-sm font-semibold text-slate-600 hover:bg-slate-100"
+                  className="rounded-xl px-3 sm:px-5 py-1.5 sm:py-3 text-xs sm:text-sm font-semibold text-slate-600 hover:bg-slate-100"
                 >
                   Cancel
                 </button>
-
                 <button
                   type="submit"
                   disabled={savingFolderRename}
-                  className="rounded-xl bg-orange-500 px-5 py-3 text-sm font-semibold text-white transition hover:bg-orange-600 disabled:opacity-60"
+                  className="rounded-xl bg-orange-500 px-4 sm:px-5 py-1.5 sm:py-3 text-xs sm:text-sm font-semibold text-white transition hover:bg-orange-600 disabled:opacity-60"
                 >
-                  {savingFolderRename
-                    ? "Saving..."
-                    : "Rename"}
+                  {savingFolderRename ? "Saving..." : "Rename"}
                 </button>
-
               </div>
-
             </form>
-
           </div>
-
         </div>
-
       )}
 
-      {/* ========== FOLDER DELETE CONFIRMATION MODAL ========== */}
+      {/* Folder Delete Confirmation Modal */}
       {folderToDelete && (
-
-        <div className="fixed inset-0 z-[90] flex items-end justify-center bg-black/40 px-4 pb-6 sm:items-center sm:pb-0">
-
-          <div className="w-full max-w-sm overflow-hidden rounded-3xl bg-white shadow-2xl">
-
-            <div className="px-6 pb-5 pt-7 text-center">
-
-              <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-red-100 text-xl text-red-500">
+        <div className="fixed inset-0 z-[90] flex items-end sm:items-center justify-center bg-black/40 px-4 pb-6 sm:pb-0">
+          <div className="w-full max-w-xs sm:max-w-sm overflow-hidden rounded-2xl sm:rounded-3xl bg-white shadow-2xl">
+            <div className="px-4 sm:px-6 pb-4 sm:pb-5 pt-6 sm:pt-7 text-center">
+              <div className="mx-auto mb-3 sm:mb-4 flex h-12 w-12 sm:h-14 sm:w-14 items-center justify-center rounded-full bg-red-100 text-base sm:text-xl text-red-500">
                 <FaTrash />
               </div>
-
-              <h3 className="text-lg font-bold text-slate-800">
+              <h3 className="text-base sm:text-lg font-bold text-slate-800">
                 Delete Folder?
               </h3>
-
-              <p className="mt-2 text-sm leading-6 text-slate-500">
-
+              <p className="mt-2 text-xs sm:text-sm leading-5 sm:leading-6 text-slate-500">
                 Are you sure you want to delete
-
                 <br />
-
-                <span className="block max-w-[200px] mx-auto truncate font-semibold text-slate-700" title={folderToDelete.name}>
+                <span className="block max-w-[180px] sm:max-w-[200px] mx-auto truncate font-semibold text-slate-700" title={folderToDelete.name}>
                   {folderToDelete.name}
                 </span>
-
                 <br />
-
                 and its contents?
-
               </p>
-
             </div>
-
             <div className="border-t border-slate-200">
-
               <button
                 type="button"
                 disabled={deletingFolder}
                 onClick={handleDeleteFolder}
-                className="flex w-full items-center justify-center py-4 text-base font-semibold text-red-500 transition hover:bg-red-50 disabled:opacity-50"
+                className="flex w-full items-center justify-center py-3 sm:py-4 text-sm sm:text-base font-semibold text-red-500 transition hover:bg-red-50 disabled:opacity-50"
               >
-                {deletingFolder
-                  ? "Deleting..."
-                  : "Delete Folder"}
+                {deletingFolder ? "Deleting..." : "Delete Folder"}
               </button>
-
               <div className="border-t border-slate-200" />
-
               <button
                 type="button"
                 disabled={deletingFolder}
                 onClick={() => setFolderToDelete(null)}
-                className="flex w-full items-center justify-center py-4 text-base font-semibold text-blue-600 transition hover:bg-slate-50"
+                className="flex w-full items-center justify-center py-3 sm:py-4 text-sm sm:text-base font-semibold text-blue-600 transition hover:bg-slate-50"
               >
                 Cancel
               </button>
-
             </div>
-
           </div>
-
         </div>
-
       )}
 
-      {/* ========== FOLDER DOWNLOAD PROGRESS MODAL ========== */}
+      {/* Folder Download Progress Modal */}
       {downloadingFolder && (
-
         <div className="fixed inset-0 z-[95] flex items-center justify-center bg-black/30 px-4">
-
-          <div className="w-full max-w-sm rounded-3xl bg-white p-6 shadow-2xl">
-
-            <div className="mb-5 flex items-center gap-4">
-
-              <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-green-100 text-green-600">
-                <FaDownload />
+          <div className="w-full max-w-xs sm:max-w-sm rounded-2xl sm:rounded-3xl bg-white p-5 sm:p-6 shadow-2xl">
+            <div className="mb-3 sm:mb-5 flex items-center gap-3 sm:gap-4">
+              <div className="flex h-10 w-10 sm:h-12 sm:w-12 items-center justify-center rounded-2xl bg-green-100 text-green-600">
+                <FaDownload className="text-base sm:text-lg" />
               </div>
-
               <div className="min-w-0">
-
-                <h3 className="truncate font-semibold text-slate-800">
+                <h3 className="text-sm sm:text-base font-semibold text-slate-800">
                   Downloading Folder
                 </h3>
-
-                <p className="truncate text-xs text-slate-500">
+                <p className="truncate text-[10px] sm:text-xs text-slate-500">
                   {downloadingFolder.name}
                 </p>
-
               </div>
-
             </div>
-
-            <div className="mb-2 flex items-center justify-between">
-
-              <span className="text-sm font-medium text-slate-600">
+            <div className="mb-1.5 sm:mb-2 flex items-center justify-between">
+              <span className="text-xs sm:text-sm font-medium text-slate-600">
                 Download progress
               </span>
-
-              <span className="text-sm font-bold text-green-600">
+              <span className="text-xs sm:text-sm font-bold text-green-600">
                 {folderDownloadProgress}%
               </span>
-
             </div>
-
-            <div className="h-3 overflow-hidden rounded-full bg-slate-200">
-
+            <div className="h-1.5 sm:h-3 overflow-hidden rounded-full bg-slate-200">
               <div
                 className="h-full rounded-full bg-green-600 transition-all duration-300"
-                style={{
-                  width: `${folderDownloadProgress}%`,
-                }}
+                style={{ width: `${folderDownloadProgress}%` }}
               />
-
             </div>
-
           </div>
-
         </div>
-
       )}
 
-      {/* ========== SHARE MODAL (Reused for both files and folders) ========== */}
+      {/* Share Modal */}
       {(sharingFile || sharingFolder) && (
-
-        <div className="fixed inset-0 z-[80] flex items-center justify-center bg-slate-950/50 p-4">
-
-          <div className="flex max-h-[90vh] w-full max-w-lg flex-col overflow-hidden rounded-3xl bg-white shadow-2xl">
-
-            <div className="flex items-center justify-between border-b border-slate-200 px-6 py-5">
-
-              <div className="flex min-w-0 items-center gap-3">
-
-                <div className="flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-xl bg-purple-100 text-purple-600">
-                  <FaShareAlt />
+        <div className="fixed inset-0 z-[80] flex items-center justify-center bg-slate-950/50 p-3 sm:p-4">
+          <div className="flex max-h-[90vh] w-full max-w-sm sm:max-w-lg flex-col overflow-hidden rounded-2xl sm:rounded-3xl bg-white shadow-2xl">
+            <div className="flex items-center justify-between border-b border-slate-200 px-4 sm:px-6 py-4 sm:py-5">
+              <div className="flex min-w-0 items-center gap-2 sm:gap-3">
+                <div className="flex h-9 w-9 sm:h-11 sm:w-11 flex-shrink-0 items-center justify-center rounded-xl bg-purple-100 text-purple-600">
+                  <FaShareAlt className="text-sm sm:text-base" />
                 </div>
-
                 <div className="min-w-0">
-
-                  <h3 className="font-bold text-slate-800">
+                  <h3 className="text-sm sm:text-base font-bold text-slate-800">
                     Share {sharingFolder ? "Folder" : "File"}
                   </h3>
-
-                  <p className="truncate text-xs text-slate-500">
-                    {sharingFolder
-                      ? sharingFolder.name
-                      : sharingFile?.original_name}
+                  <p className="truncate text-[10px] sm:text-xs text-slate-500">
+                    {sharingFolder ? sharingFolder.name : sharingFile?.original_name}
                   </p>
-
                 </div>
-
               </div>
-
               <button
                 type="button"
                 onClick={closeShareModal}
-                className="flex h-10 w-10 items-center justify-center rounded-xl bg-slate-100 text-slate-600 hover:bg-red-50 hover:text-red-500"
+                className="flex h-8 w-8 sm:h-10 sm:w-10 items-center justify-center rounded-xl bg-slate-100 text-slate-600 hover:bg-red-50 hover:text-red-500"
               >
-                <FaTimes />
+                <FaTimes className="text-sm sm:text-base" />
               </button>
-
             </div>
 
-            <div className="overflow-y-auto px-6 py-5">
-
+            <div className="overflow-y-auto px-4 sm:px-6 py-4 sm:py-5">
               {loadingShareData ? (
-
-                <div className="flex flex-col items-center py-12">
-
-                  <div className="h-10 w-10 animate-spin rounded-full border-4 border-slate-200 border-t-blue-600" />
-
-                  <p className="mt-4 text-sm text-slate-500">
+                <div className="flex flex-col items-center py-8 sm:py-12">
+                  <div className="h-8 w-8 sm:h-10 sm:w-10 animate-spin rounded-full border-4 border-slate-200 border-t-blue-600" />
+                  <p className="mt-3 sm:mt-4 text-xs sm:text-sm text-slate-500">
                     Loading sharing settings...
                   </p>
-
                 </div>
-
               ) : (
-
                 <>
-
-                  <form onSubmit={handleShareWithUser} className="border-b border-slate-200 pb-6">
-
-                    <h4 className="mb-3 flex items-center gap-2 font-semibold text-slate-800">
-                      <FaUser className="text-blue-600" />
+                  <form onSubmit={handleShareWithUser} className="border-b border-slate-200 pb-4 sm:pb-6">
+                    <h4 className="mb-2 sm:mb-3 flex items-center gap-2 text-sm sm:text-base font-semibold text-slate-800">
+                      <FaUser className="text-blue-600 text-sm sm:text-base" />
                       Add people
                     </h4>
-
-                    <div className="flex flex-col gap-3 sm:flex-row">
-
+                    <div className="flex flex-col gap-2 sm:gap-3 sm:flex-row">
                       <input
                         type="email"
                         value={shareEmail}
-                        onChange={(event) =>
-                          setShareEmail(event.target.value)
-                        }
+                        onChange={(event) => setShareEmail(event.target.value)}
                         placeholder="Enter user email"
-                        className="min-w-0 flex-1 rounded-xl border border-slate-200 px-4 py-3 text-sm outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
+                        className="min-w-0 flex-1 rounded-xl border border-slate-200 px-3 sm:px-4 py-2 sm:py-3 text-sm outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
                       />
-
                       <select
                         value={shareRole}
-                        onChange={(event) =>
-                          setShareRole(event.target.value)
-                        }
-                        className="rounded-xl border border-slate-200 bg-white px-3 py-3 text-sm outline-none focus:border-blue-500"
+                        onChange={(event) => setShareRole(event.target.value)}
+                        className="rounded-xl border border-slate-200 bg-white px-2 sm:px-3 py-2 sm:py-3 text-sm outline-none focus:border-blue-500"
                       >
-                        <option value="viewer">
-                          Viewer
-                        </option>
-
-                        <option value="editor">
-                          Editor
-                        </option>
+                        <option value="viewer">Viewer</option>
+                        <option value="editor">Editor</option>
                       </select>
-
                       <button
                         type="submit"
                         disabled={sharing || !shareEmail.trim()}
-                        className="rounded-xl bg-blue-600 px-5 py-3 text-sm font-semibold text-white transition hover:bg-blue-700 disabled:opacity-60"
+                        className="rounded-xl bg-blue-600 px-3 sm:px-5 py-2 sm:py-3 text-sm font-semibold text-white transition hover:bg-blue-700 disabled:opacity-60"
                       >
-                        {sharing
-                          ? "Sharing..."
-                          : "Share"}
+                        {sharing ? "Sharing..." : "Share"}
                       </button>
-
                     </div>
-
                   </form>
 
-                  <div className="border-b border-slate-200 py-6">
-
-                    <div className="mb-4 flex items-center gap-2">
-
-                      <FaLink className="text-purple-600" />
-
-                      <h4 className="font-semibold text-slate-800">
+                  <div className="border-b border-slate-200 py-4 sm:py-6">
+                    <div className="mb-3 sm:mb-4 flex items-center gap-2">
+                      <FaLink className="text-purple-600 text-sm sm:text-base" />
+                      <h4 className="text-sm sm:text-base font-semibold text-slate-800">
                         General Access
                       </h4>
-
                     </div>
-
-                    <div className="rounded-2xl border border-slate-200 p-4">
-
-                      <div className="flex items-center justify-between gap-4">
-
+                    <div className="rounded-2xl border border-slate-200 p-3 sm:p-4">
+                      <div className="flex items-center justify-between gap-2 sm:gap-4">
                         <div>
-
-                          <p className="font-medium text-slate-700">
+                          <p className="text-xs sm:text-sm font-medium text-slate-700">
                             Anyone with the link
                           </p>
-
-                          <p className="mt-1 text-xs text-slate-500">
+                          <p className="mt-0.5 sm:mt-1 text-[10px] sm:text-xs text-slate-500">
                             {accessType === "anyone_with_link"
                               ? "Anyone who has the link can access this item."
                               : "Only people you add can access this item."}
                           </p>
-
                         </div>
-
                         <button
                           type="button"
                           disabled={updatingLinkAccess}
                           onClick={() =>
                             handleLinkAccessChange(
-                              accessType === "anyone_with_link"
-                                ? "restricted"
-                                : "anyone_with_link"
+                              accessType === "anyone_with_link" ? "restricted" : "anyone_with_link"
                             )
                           }
-                          className={`relative h-7 w-12 rounded-full transition ${accessType === "anyone_with_link"
-                              ? "bg-blue-600"
-                              : "bg-slate-300"
-                            } ${updatingLinkAccess
-                              ? "cursor-not-allowed opacity-60"
-                              : ""
-                            }`}
+                          className={`relative h-6 w-10 sm:h-7 sm:w-12 rounded-full transition ${accessType === "anyone_with_link" ? "bg-blue-600" : "bg-slate-300"
+                            } ${updatingLinkAccess ? "cursor-not-allowed opacity-60" : ""}`}
                         >
                           <span
-                            className={`absolute top-1 h-5 w-5 rounded-full bg-white shadow transition-all duration-200 ${accessType === "anyone_with_link"
-                                ? "left-6"
-                                : "left-1"
+                            className={`absolute top-1 h-4 w-4 sm:h-5 sm:w-5 rounded-full bg-white shadow transition-all duration-200 ${accessType === "anyone_with_link" ? "left-5 sm:left-6" : "left-1"
                               }`}
                           />
                         </button>
-
                       </div>
-
                       {accessType === "anyone_with_link" && (
-
-                        <div className="mt-4">
-
+                        <div className="mt-3 sm:mt-4">
                           {!shareToken ? (
-
-                            <div className="rounded-xl bg-yellow-50 px-3 py-3 text-xs text-yellow-700">
+                            <div className="rounded-xl bg-yellow-50 px-2 sm:px-3 py-2 sm:py-3 text-[10px] sm:text-xs text-yellow-700">
                               Share link is being generated.
                             </div>
-
                           ) : (
-
                             <div className="flex gap-2">
-
                               <input
                                 readOnly
                                 value={getShareLink()}
-                                className="min-w-0 flex-1 rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-xs text-slate-500 outline-none"
+                                className="min-w-0 flex-1 rounded-xl border border-slate-200 bg-slate-50 px-2 sm:px-3 py-1.5 sm:py-2 text-[10px] sm:text-xs text-slate-500 outline-none"
                               />
-
                               <button
                                 type="button"
                                 onClick={handleCopyShareLink}
-                                className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl bg-blue-600 text-white hover:bg-blue-700"
+                                className="flex h-8 w-8 sm:h-10 sm:w-10 flex-shrink-0 items-center justify-center rounded-xl bg-blue-600 text-white hover:bg-blue-700"
                                 title="Copy link"
                               >
-                                <FaCopy />
+                                <FaCopy className="text-xs sm:text-sm" />
                               </button>
-
                             </div>
-
                           )}
-
                         </div>
-
                       )}
-
                     </div>
-
                   </div>
 
-                  <div className="pt-6">
-
-                    <div className="mb-4 flex items-center gap-2">
-
-                      <FaUsers className="text-green-600" />
-
-                      <h4 className="font-semibold text-slate-800">
+                  <div className="pt-4 sm:pt-6">
+                    <div className="mb-3 sm:mb-4 flex items-center gap-2">
+                      <FaUsers className="text-green-600 text-sm sm:text-base" />
+                      <h4 className="text-sm sm:text-base font-semibold text-slate-800">
                         People with access
                       </h4>
-
                     </div>
-
                     {sharedUsers.length === 0 ? (
-
-                      <div className="rounded-2xl bg-slate-50 px-4 py-8 text-center">
-
-                        <FaUsers className="mx-auto mb-3 text-3xl text-slate-300" />
-
-                        <p className="text-sm font-medium text-slate-600">
+                      <div className="rounded-2xl bg-slate-50 px-3 sm:px-4 py-6 sm:py-8 text-center">
+                        <FaUsers className="mx-auto mb-2 sm:mb-3 text-2xl sm:text-3xl text-slate-300" />
+                        <p className="text-xs sm:text-sm font-medium text-slate-600">
                           No one else has access
                         </p>
-
-                        <p className="mt-1 text-xs text-slate-400">
+                        <p className="mt-0.5 sm:mt-1 text-[10px] sm:text-xs text-slate-400">
                           Share this item with a registered user.
                         </p>
-
                       </div>
-
                     ) : (
-
-                      <div className="space-y-3">
-
+                      <div className="space-y-2 sm:space-y-3">
                         {sharedUsers.map((sharedUser) => (
-
                           <div
                             key={sharedUser.id}
-                            className="flex items-center justify-between gap-3 rounded-2xl border border-slate-200 p-4"
+                            className="flex items-center justify-between gap-2 sm:gap-3 rounded-2xl border border-slate-200 p-3 sm:p-4"
                           >
-
-                            <div className="flex min-w-0 items-center gap-3">
-
-                              <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-blue-100 font-semibold text-blue-600">
-
-                                {sharedUser.full_name?.charAt(0)?.toUpperCase() ||
-                                  "U"}
-
+                            <div className="flex min-w-0 items-center gap-2 sm:gap-3">
+                              <div className="flex h-8 w-8 sm:h-10 sm:w-10 flex-shrink-0 items-center justify-center rounded-full bg-blue-100 font-semibold text-blue-600 text-xs sm:text-sm">
+                                {sharedUser.full_name?.charAt(0)?.toUpperCase() || "U"}
                               </div>
-
                               <div className="min-w-0">
-
-                                <p className="truncate text-sm font-semibold text-slate-700">
+                                <p className="truncate text-xs sm:text-sm font-semibold text-slate-700">
                                   {sharedUser.full_name}
                                 </p>
-
-                                <p className="truncate text-xs text-slate-500">
+                                <p className="truncate text-[10px] sm:text-xs text-slate-500">
                                   {sharedUser.email}
                                 </p>
-
                               </div>
-
                             </div>
-
-                            <div className="flex items-center gap-2">
-
-                              <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-medium capitalize text-slate-600">
+                            <div className="flex items-center gap-1 sm:gap-2">
+                              <span className="rounded-full bg-slate-100 px-2 sm:px-3 py-0.5 sm:py-1 text-[10px] sm:text-xs font-medium capitalize text-slate-600">
                                 {sharedUser.role}
                               </span>
-
                               <button
                                 type="button"
                                 disabled={removingUserId === sharedUser.id}
                                 onClick={() => handleRemoveSharedUser(sharedUser.id)}
-                                className="flex h-9 w-9 items-center justify-center rounded-xl text-red-500 hover:bg-red-50 disabled:opacity-50"
+                                className="flex h-7 w-7 sm:h-9 sm:w-9 items-center justify-center rounded-xl text-red-500 hover:bg-red-50 disabled:opacity-50"
                               >
-                                <FaTimes />
+                                <FaTimes className="text-xs sm:text-sm" />
                               </button>
-
                             </div>
-
                           </div>
-
                         ))}
-
                       </div>
-
                     )}
-
                   </div>
-
                 </>
-
               )}
-
             </div>
-
           </div>
-
         </div>
-
       )}
 
-      {/* ========== PROFILE MODAL ========== */}
+      {/* Profile Modal */}
       {showProfile && (
-        <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-slate-950/50 p-4 backdrop-blur-sm">
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-slate-950/50 p-3 sm:p-4 backdrop-blur-sm">
           <div
-            className="w-full max-w-md max-h-[90vh] overflow-hidden rounded-3xl bg-white shadow-2xl"
+            className="w-full max-w-sm sm:max-w-md max-h-[90vh] overflow-hidden rounded-2xl sm:rounded-3xl bg-white shadow-2xl"
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="flex items-center justify-between border-b border-slate-200 px-6 py-5 flex-shrink-0">
-              <div className="flex items-center gap-3">
-                <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-blue-100 text-blue-600">
-                  <FaUser />
+            <div className="flex items-center justify-between border-b border-slate-200 px-4 sm:px-6 py-4 sm:py-5 flex-shrink-0">
+              <div className="flex items-center gap-2 sm:gap-3">
+                <div className="flex h-9 w-9 sm:h-11 sm:w-11 items-center justify-center rounded-xl bg-blue-100 text-blue-600">
+                  <FaUser className="text-sm sm:text-base" />
                 </div>
                 <div>
-                  <h3 className="font-bold text-slate-800">Account Settings</h3>
-                  <p className="text-xs text-slate-500">Manage your profile</p>
+                  <h3 className="text-sm sm:text-base font-bold text-slate-800">Account Settings</h3>
+                  <p className="text-[10px] sm:text-xs text-slate-500">Manage your profile</p>
                 </div>
               </div>
               <button
                 type="button"
                 onClick={closeProfile}
-                className="flex h-10 w-10 items-center justify-center rounded-xl bg-slate-100 text-slate-600 hover:bg-red-50 hover:text-red-500 flex-shrink-0"
+                className="flex h-8 w-8 sm:h-10 sm:w-10 items-center justify-center rounded-xl bg-slate-100 text-slate-600 hover:bg-red-50 hover:text-red-500 flex-shrink-0"
               >
-                <FaTimes />
+                <FaTimes className="text-sm sm:text-base" />
               </button>
             </div>
 
-            <div className="overflow-y-auto px-6 py-5 flex-1" style={{ maxHeight: "calc(90vh - 80px)" }}>
-              {/* Profile Success/Error Messages */}
+            <div className="overflow-y-auto px-4 sm:px-6 py-4 sm:py-5 flex-1" style={{ maxHeight: "calc(90vh - 80px)" }}>
               {profileSuccess && (
-                <div className="mb-4 rounded-xl bg-green-50 px-4 py-3 text-sm text-green-700">
+                <div className="mb-3 sm:mb-4 rounded-xl bg-green-50 px-3 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm text-green-700">
                   {profileSuccess}
                 </div>
               )}
               {profileError && (
-                <div className="mb-4 rounded-xl bg-red-50 px-4 py-3 text-sm text-red-700">
+                <div className="mb-3 sm:mb-4 rounded-xl bg-red-50 px-3 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm text-red-700">
                   {profileError}
                 </div>
               )}
 
-              {/* User Info */}
-              <div className="mb-6 flex items-center gap-4 rounded-2xl bg-slate-50 p-4">
-                <div className="flex h-16 w-16 flex-shrink-0 items-center justify-center rounded-full bg-blue-100 text-2xl font-bold text-blue-600">
+              <div className="mb-4 sm:mb-6 flex items-center gap-3 sm:gap-4 rounded-2xl bg-slate-50 p-3 sm:p-4">
+                <div className="flex h-12 w-12 sm:h-16 sm:w-16 flex-shrink-0 items-center justify-center rounded-full bg-blue-100 text-xl sm:text-2xl font-bold text-blue-600">
                   {firstName.charAt(0).toUpperCase()}
                 </div>
                 <div className="min-w-0">
-                  <p className="font-semibold text-slate-800">{user?.full_name || "User"}</p>
-                  <p className="text-sm text-slate-500 break-all">{user?.email || ""}</p>
+                  <p className="text-sm sm:text-base font-semibold text-slate-800">{user?.full_name || "User"}</p>
+                  <p className="text-xs sm:text-sm text-slate-500 break-all">{user?.email || ""}</p>
                 </div>
               </div>
 
               {/* Edit Name Section */}
-              <div className="mb-6">
-                <div className="flex items-center justify-between mb-3">
-                  <h4 className="font-semibold text-slate-700 flex items-center gap-2">
-                    <FaEdit className="text-blue-500" />
+              <div className="mb-4 sm:mb-6">
+                <div className="flex items-center justify-between mb-2 sm:mb-3">
+                  <h4 className="text-sm sm:text-base font-semibold text-slate-700 flex items-center gap-2">
+                    <FaEdit className="text-blue-500 text-sm sm:text-base" />
                     Full Name
                   </h4>
                   {!editName && (
                     <button
                       type="button"
                       onClick={() => setEditName(true)}
-                      className="text-sm font-medium text-blue-600 hover:text-blue-700"
+                      className="text-xs sm:text-sm font-medium text-blue-600 hover:text-blue-700"
                     >
                       Edit
                     </button>
                   )}
                 </div>
-
                 {editName ? (
-                  <form onSubmit={handleUpdateName} className="space-y-3">
+                  <form onSubmit={handleUpdateName} className="space-y-2 sm:space-y-3">
                     <input
                       type="text"
                       value={newFullName}
                       onChange={(e) => setNewFullName(e.target.value)}
-                      className="w-full rounded-xl border border-slate-200 px-4 py-3 text-sm outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
+                      className="w-full rounded-xl border border-slate-200 px-3 sm:px-4 py-2 sm:py-3 text-sm outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
                       placeholder="Enter your full name"
                       autoFocus
                     />
-                    <div className="flex gap-3">
+                    <div className="flex gap-2 sm:gap-3">
                       <button
                         type="button"
                         onClick={() => {
@@ -2991,14 +2629,14 @@ function Dashboard() {
                           setNewFullName(user?.full_name || "");
                           setProfileError("");
                         }}
-                        className="flex-1 rounded-xl border border-slate-200 px-4 py-2.5 text-sm font-semibold text-slate-600 hover:bg-slate-50"
+                        className="flex-1 rounded-xl border border-slate-200 px-3 sm:px-4 py-1.5 sm:py-2.5 text-xs sm:text-sm font-semibold text-slate-600 hover:bg-slate-50"
                       >
                         Cancel
                       </button>
                       <button
                         type="submit"
                         disabled={profileLoading}
-                        className="flex-1 rounded-xl bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-blue-700 disabled:opacity-60"
+                        className="flex-1 rounded-xl bg-blue-600 px-3 sm:px-4 py-1.5 sm:py-2.5 text-xs sm:text-sm font-semibold text-white hover:bg-blue-700 disabled:opacity-60"
                       >
                         {profileLoading ? "Saving..." : "Save"}
                       </button>
@@ -3010,58 +2648,57 @@ function Dashboard() {
               </div>
 
               {/* Password Section */}
-              <div className="mb-6">
-                <div className="flex items-center justify-between mb-3">
-                  <h4 className="font-semibold text-slate-700 flex items-center gap-2">
-                    <FaLock className="text-red-500" />
+              <div className="mb-4 sm:mb-6">
+                <div className="flex items-center justify-between mb-2 sm:mb-3">
+                  <h4 className="text-sm sm:text-base font-semibold text-slate-700 flex items-center gap-2">
+                    <FaLock className="text-red-500 text-sm sm:text-base" />
                     Password
                   </h4>
                   {!editPassword && (
                     <button
                       type="button"
                       onClick={() => setEditPassword(true)}
-                      className="text-sm font-medium text-blue-600 hover:text-blue-700"
+                      className="text-xs sm:text-sm font-medium text-blue-600 hover:text-blue-700"
                     >
                       Change
                     </button>
                   )}
                 </div>
-
                 {editPassword ? (
-                  <form onSubmit={handleUpdatePassword} className="space-y-3">
+                  <form onSubmit={handleUpdatePassword} className="space-y-2 sm:space-y-3">
                     <div>
-                      <label className="block text-xs font-medium text-slate-600 mb-1">
+                      <label className="block text-[10px] sm:text-xs font-medium text-slate-600 mb-0.5 sm:mb-1">
                         Current Password
                       </label>
                       <input
                         type={showPassword ? "text" : "password"}
                         value={currentPassword}
                         onChange={(e) => setCurrentPassword(e.target.value)}
-                        className="w-full rounded-xl border border-slate-200 px-4 py-3 text-sm outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
+                        className="w-full rounded-xl border border-slate-200 px-3 sm:px-4 py-2 sm:py-3 text-sm outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
                         placeholder="Enter current password"
                       />
                     </div>
                     <div>
-                      <label className="block text-xs font-medium text-slate-600 mb-1">
+                      <label className="block text-[10px] sm:text-xs font-medium text-slate-600 mb-0.5 sm:mb-1">
                         New Password
                       </label>
                       <input
                         type={showPassword ? "text" : "password"}
                         value={newPassword}
                         onChange={(e) => setNewPassword(e.target.value)}
-                        className="w-full rounded-xl border border-slate-200 px-4 py-3 text-sm outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
+                        className="w-full rounded-xl border border-slate-200 px-3 sm:px-4 py-2 sm:py-3 text-sm outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
                         placeholder="Enter new password (min 8 chars)"
                       />
                     </div>
                     <div>
-                      <label className="block text-xs font-medium text-slate-600 mb-1">
+                      <label className="block text-[10px] sm:text-xs font-medium text-slate-600 mb-0.5 sm:mb-1">
                         Confirm New Password
                       </label>
                       <input
                         type={showPassword ? "text" : "password"}
                         value={confirmPassword}
                         onChange={(e) => setConfirmPassword(e.target.value)}
-                        className="w-full rounded-xl border border-slate-200 px-4 py-3 text-sm outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
+                        className="w-full rounded-xl border border-slate-200 px-3 sm:px-4 py-2 sm:py-3 text-sm outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
                         placeholder="Confirm new password"
                       />
                     </div>
@@ -3071,13 +2708,13 @@ function Dashboard() {
                         id="showPassword"
                         checked={showPassword}
                         onChange={(e) => setShowPassword(e.target.checked)}
-                        className="h-4 w-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500"
+                        className="h-3 w-3 sm:h-4 sm:w-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500"
                       />
-                      <label htmlFor="showPassword" className="text-sm text-slate-600">
+                      <label htmlFor="showPassword" className="text-xs sm:text-sm text-slate-600">
                         Show passwords
                       </label>
                     </div>
-                    <div className="flex gap-3">
+                    <div className="flex gap-2 sm:gap-3">
                       <button
                         type="button"
                         onClick={() => {
@@ -3087,14 +2724,14 @@ function Dashboard() {
                           setConfirmPassword("");
                           setProfileError("");
                         }}
-                        className="flex-1 rounded-xl border border-slate-200 px-4 py-2.5 text-sm font-semibold text-slate-600 hover:bg-slate-50"
+                        className="flex-1 rounded-xl border border-slate-200 px-3 sm:px-4 py-1.5 sm:py-2.5 text-xs sm:text-sm font-semibold text-slate-600 hover:bg-slate-50"
                       >
                         Cancel
                       </button>
                       <button
                         type="submit"
                         disabled={profileLoading}
-                        className="flex-1 rounded-xl bg-red-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-red-700 disabled:opacity-60"
+                        className="flex-1 rounded-xl bg-red-600 px-3 sm:px-4 py-1.5 sm:py-2.5 text-xs sm:text-sm font-semibold text-white hover:bg-red-700 disabled:opacity-60"
                       >
                         {profileLoading ? "Updating..." : "Update Password"}
                       </button>
@@ -3105,23 +2742,22 @@ function Dashboard() {
                 )}
               </div>
 
-              {/* Email (read-only) */}
-              <div className="mb-6">
-                <h4 className="font-semibold text-slate-700 flex items-center gap-2 mb-2">
-                  <FaEnvelope className="text-purple-500" />
+              {/* Email */}
+              <div className="mb-4 sm:mb-6">
+                <h4 className="text-sm sm:text-base font-semibold text-slate-700 flex items-center gap-2 mb-1 sm:mb-2">
+                  <FaEnvelope className="text-purple-500 text-sm sm:text-base" />
                   Email
                 </h4>
                 <p className="text-sm text-slate-700 break-all">{user?.email || ""}</p>
               </div>
 
-              {/* Logout Button in Profile */}
               <button
                 type="button"
                 onClick={() => {
                   closeProfile();
                   setShowLogoutConfirm(true);
                 }}
-                className="w-full rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-semibold text-red-600 transition hover:bg-red-100"
+                className="w-full rounded-xl border border-red-200 bg-red-50 px-3 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm font-semibold text-red-600 transition hover:bg-red-100"
               >
                 Log Out
               </button>
@@ -3130,43 +2766,39 @@ function Dashboard() {
         </div>
       )}
 
-      {/* ========== LOGOUT CONFIRMATION MODAL (macOS/iOS style) ========== */}
+      {/* Logout Confirmation Modal */}
       {showLogoutConfirm && (
         <div
           className="fixed inset-0 z-[9999] flex items-center justify-center bg-slate-950/30 p-4 backdrop-blur-sm"
           onClick={() => setShowLogoutConfirm(false)}
         >
           <div
-            className="w-full max-w-sm overflow-hidden rounded-3xl border border-white/40 bg-white/95 shadow-2xl backdrop-blur-xl"
+            className="w-full max-w-xs sm:max-w-sm overflow-hidden rounded-2xl sm:rounded-3xl border border-white/40 bg-white/95 shadow-2xl backdrop-blur-xl"
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="px-6 pb-5 pt-7 text-center">
-              <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-red-50 text-2xl">
+            <div className="px-4 sm:px-6 pb-4 sm:pb-5 pt-6 sm:pt-7 text-center">
+              <div className="mx-auto flex h-12 w-12 sm:h-14 sm:w-14 items-center justify-center rounded-full bg-red-50 text-xl sm:text-2xl">
                 ↪
               </div>
-
-              <h2 className="mt-4 text-xl font-bold text-slate-800">
+              <h2 className="mt-3 sm:mt-4 text-lg sm:text-xl font-bold text-slate-800">
                 Log out?
               </h2>
-
-              <p className="mt-2 text-sm leading-6 text-slate-500">
+              <p className="mt-1 sm:mt-2 text-xs sm:text-sm leading-5 sm:leading-6 text-slate-500">
                 Are you sure you want to log out of your CloudVault account?
               </p>
             </div>
-
             <div className="border-t border-slate-200">
               <button
                 type="button"
                 onClick={() => setShowLogoutConfirm(false)}
-                className="w-full border-b border-slate-200 px-5 py-4 text-sm font-semibold text-blue-600 transition hover:bg-slate-50 active:bg-slate-100"
+                className="w-full border-b border-slate-200 px-4 sm:px-5 py-3 sm:py-4 text-xs sm:text-sm font-semibold text-blue-600 transition hover:bg-slate-50 active:bg-slate-100"
               >
                 Cancel
               </button>
-
               <button
                 type="button"
                 onClick={handleLogout}
-                className="w-full px-5 py-4 text-sm font-bold text-red-500 transition hover:bg-red-50 active:bg-red-100"
+                className="w-full px-4 sm:px-5 py-3 sm:py-4 text-xs sm:text-sm font-bold text-red-500 transition hover:bg-red-50 active:bg-red-100"
               >
                 Log Out
               </button>

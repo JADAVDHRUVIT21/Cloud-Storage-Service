@@ -282,18 +282,18 @@ function MyFiles() {
     const category = getFileCategory(file);
 
     if (category === "image") {
-      return <FaImage className="text-xl text-purple-500" />;
+      return <FaImage className="text-base sm:text-xl text-purple-500" />;
     }
 
     if (category === "video") {
-      return <FaVideo className="text-xl text-red-500" />;
+      return <FaVideo className="text-base sm:text-xl text-red-500" />;
     }
 
     if (category === "pdf") {
-      return <FaFilePdf className="text-xl text-red-600" />;
+      return <FaFilePdf className="text-base sm:text-xl text-red-600" />;
     }
 
-    return <FaFileAlt className="text-xl text-blue-500" />;
+    return <FaFileAlt className="text-base sm:text-xl text-blue-500" />;
   };
 
   const filteredFiles = useMemo(
@@ -806,9 +806,9 @@ function MyFiles() {
   if (loading) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-slate-100">
-        <div className="flex flex-col items-center">
-          <FaCloud className="mb-4 animate-pulse text-5xl text-blue-600" />
-          <p className="text-lg font-semibold text-slate-600">
+        <div className="flex flex-col items-center px-4">
+          <FaCloud className="mb-3 sm:mb-4 animate-pulse text-4xl sm:text-5xl text-blue-600" />
+          <p className="text-base sm:text-lg font-semibold text-slate-600">
             Loading your files...
           </p>
         </div>
@@ -827,35 +827,35 @@ function MyFiles() {
       />
 
       <header className="sticky top-0 z-20 border-b border-slate-200 bg-white">
-        <div className="mx-auto flex h-[72px] max-w-[1250px] items-center justify-between gap-6 px-6">
-          <div className="flex items-center gap-4">
+        <div className="mx-auto flex min-h-[60px] sm:h-[72px] max-w-[1250px] items-center justify-between gap-3 sm:gap-6 px-3 sm:px-6">
+          <div className="flex items-center gap-2 sm:gap-4 min-w-0">
             <button
               type="button"
               onClick={() => navigate("/dashboard")}
-              className="flex h-10 w-10 items-center justify-center rounded-xl border border-slate-200 text-slate-600 transition hover:bg-slate-100"
+              className="flex h-8 w-8 sm:h-10 sm:w-10 flex-shrink-0 items-center justify-center rounded-xl border border-slate-200 text-slate-600 transition hover:bg-slate-100"
             >
-              <FaArrowLeft />
+              <FaArrowLeft className="text-sm sm:text-base" />
             </button>
 
-            <div>
-              <h1 className="text-xl font-bold text-slate-800">
+            <div className="min-w-0">
+              <h1 className="text-base sm:text-xl font-bold text-slate-800 truncate">
                 My Files
               </h1>
-              <p className="text-xs text-slate-500">
+              <p className="text-[10px] sm:text-xs text-slate-500 truncate">
                 Manage all your uploaded files
               </p>
             </div>
           </div>
 
-          <div className="flex flex-1 items-center justify-end gap-4">
-            <div className="relative w-full max-w-[430px]">
-              <FaSearch className="absolute left-4 top-1/2 -translate-y-1/2 text-sm text-slate-400" />
+          <div className="flex flex-1 items-center justify-end gap-2 sm:gap-4 min-w-0">
+            <div className="relative w-full max-w-[180px] sm:max-w-[300px] md:max-w-[430px]">
+              <FaSearch className="absolute left-3 sm:left-4 top-1/2 -translate-y-1/2 text-xs sm:text-sm text-slate-400" />
               <input
                 type="text"
                 value={searchQuery}
                 onChange={(event) => setSearchQuery(event.target.value)}
                 placeholder="Search files..."
-                className="w-full rounded-xl bg-slate-100 py-3 pl-11 pr-4 text-sm text-slate-700 outline-none transition focus:ring-2 focus:ring-blue-200"
+                className="w-full rounded-xl bg-slate-100 py-2 sm:py-3 pl-8 sm:pl-11 pr-3 sm:pr-4 text-xs sm:text-sm text-slate-700 outline-none transition focus:ring-2 focus:ring-blue-200"
               />
             </div>
 
@@ -863,40 +863,41 @@ function MyFiles() {
               type="button"
               onClick={handleUploadClick}
               disabled={uploading}
-              className="flex flex-shrink-0 items-center gap-2 rounded-xl bg-blue-600 px-5 py-3 text-sm font-semibold text-white shadow-lg shadow-blue-200 transition hover:bg-blue-700 disabled:opacity-60"
+              className="flex flex-shrink-0 items-center gap-1 sm:gap-2 rounded-xl bg-blue-600 px-3 sm:px-5 py-2 sm:py-3 text-xs sm:text-sm font-semibold text-white shadow-lg shadow-blue-200 transition hover:bg-blue-700 disabled:opacity-60"
             >
-              <FaCloudUploadAlt />
-              {uploading ? `${uploadProgress}%` : "Upload"}
+              <FaCloudUploadAlt className="text-xs sm:text-sm" />
+              <span className="hidden xs:inline">{uploading ? `${uploadProgress}%` : "Upload"}</span>
+              <span className="xs:hidden">{uploading ? `${uploadProgress}%` : "Upload"}</span>
             </button>
           </div>
         </div>
       </header>
 
-      <main className="mx-auto max-w-[1250px] px-6 py-8">
+      <main className="mx-auto max-w-[1250px] px-3 sm:px-6 py-4 sm:py-8">
 
         {error && (
-          <div className="mb-6 flex items-center justify-between rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-600">
-            <span>{error}</span>
-            <button type="button" onClick={() => setError("")}>
-              <FaTimes />
+          <div className="mb-4 sm:mb-6 flex items-center justify-between rounded-xl border border-red-200 bg-red-50 px-3 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm text-red-600">
+            <span className="truncate">{error}</span>
+            <button type="button" onClick={() => setError("")} className="flex-shrink-0 ml-2">
+              <FaTimes className="text-sm sm:text-base" />
             </button>
           </div>
         )}
 
         {success && (
-          <div className="mb-6 flex items-center justify-between rounded-xl border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-600">
-            <span>{success}</span>
-            <button type="button" onClick={() => setSuccess("")}>
-              <FaTimes />
+          <div className="mb-4 sm:mb-6 flex items-center justify-between rounded-xl border border-green-200 bg-green-50 px-3 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm text-green-600">
+            <span className="truncate">{success}</span>
+            <button type="button" onClick={() => setSuccess("")} className="flex-shrink-0 ml-2">
+              <FaTimes className="text-sm sm:text-base" />
             </button>
           </div>
         )}
 
-        <div className="mb-8">
-          <h2 className="text-3xl font-bold text-slate-800">
+        <div className="mb-4 sm:mb-8">
+          <h2 className="text-xl sm:text-2xl md:text-3xl font-bold text-slate-800">
             All Files
           </h2>
-          <p className="mt-2 text-sm text-slate-500">
+          <p className="mt-1 sm:mt-2 text-xs sm:text-sm text-slate-500">
             {filteredFiles.length}{" "}
             {filteredFiles.length === 1 ? "file" : "files"}
             {" available"}
@@ -904,48 +905,49 @@ function MyFiles() {
         </div>
 
         {filteredFiles.length === 0 ? (
-          <div className="flex min-h-[330px] flex-col items-center justify-center rounded-2xl border border-slate-200 bg-white p-8 text-center shadow-sm">
-            <FaCloud className="mb-5 text-6xl text-slate-300" />
-            <h3 className="text-xl font-bold text-slate-700">
+          <div className="flex min-h-[250px] sm:min-h-[330px] flex-col items-center justify-center rounded-2xl border border-slate-200 bg-white p-6 sm:p-8 text-center shadow-sm">
+            <FaCloud className="mb-3 sm:mb-5 text-4xl sm:text-6xl text-slate-300" />
+            <h3 className="text-lg sm:text-xl font-bold text-slate-700">
               No files found
             </h3>
-            <p className="mt-2 text-sm text-slate-500">
+            <p className="mt-1 sm:mt-2 text-xs sm:text-sm text-slate-500">
               Upload your first file to get started.
             </p>
           </div>
         ) : (
           <div className="overflow-visible rounded-2xl border border-slate-200 bg-white shadow-sm">
-            <div className="grid grid-cols-[minmax(0,1fr)_140px_100px] border-b border-slate-200 bg-slate-50 px-6 py-4 text-xs font-semibold uppercase tracking-wider text-slate-500">
+            {/* Header */}
+            <div className="grid grid-cols-[minmax(0,1fr)_80px_60px] sm:grid-cols-[minmax(0,1fr)_140px_100px] border-b border-slate-200 bg-slate-50 px-3 sm:px-6 py-3 sm:py-4 text-[10px] sm:text-xs font-semibold uppercase tracking-wider text-slate-500">
               <div>Name</div>
-              <div>Size</div>
+              <div className="hidden sm:block">Size</div>
               <div className="text-right">Actions</div>
             </div>
 
             {filteredFiles.map((file) => (
               <div
                 key={file.id}
-                className="grid grid-cols-[minmax(0,1fr)_140px_100px] items-center border-b border-slate-100 px-6 py-4 last:border-b-0 transition hover:bg-slate-50"
+                className="grid grid-cols-[minmax(0,1fr)_60px_60px] sm:grid-cols-[minmax(0,1fr)_140px_100px] items-center border-b border-slate-100 px-3 sm:px-6 py-3 sm:py-4 last:border-b-0 transition hover:bg-slate-50"
               >
                 <button
                   type="button"
                   onClick={() => openPreview(file)}
-                  className="flex min-w-0 items-center gap-4 text-left"
+                  className="flex min-w-0 items-center gap-2 sm:gap-4 text-left"
                 >
-                  <div className="flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-xl bg-slate-100">
+                  <div className="flex h-9 w-9 sm:h-11 sm:w-11 flex-shrink-0 items-center justify-center rounded-xl bg-slate-100">
                     {getFileIcon(file)}
                   </div>
 
                   <div className="min-w-0">
-                    <p className="truncate font-semibold text-slate-700">
+                    <p className="truncate text-xs sm:text-sm font-semibold text-slate-700">
                       {file.original_name}
                     </p>
-                    <p className="mt-1 text-xs text-slate-400">
+                    <p className="mt-0.5 sm:mt-1 text-[10px] sm:text-xs text-slate-400">
                       {getFileCategory(file)}
                     </p>
                   </div>
                 </button>
 
-                <div className="text-sm text-slate-500">
+                <div className="text-[10px] sm:text-sm text-slate-500 hidden sm:block">
                   {formatBytes(file.size)}
                 </div>
 
@@ -956,49 +958,49 @@ function MyFiles() {
                       event.stopPropagation();
                       setActiveMenu(activeMenu === file.id ? null : file.id);
                     }}
-                    className="flex h-10 w-10 items-center justify-center rounded-xl text-slate-600 transition hover:bg-slate-100"
+                    className="flex h-8 w-8 sm:h-10 sm:w-10 items-center justify-center rounded-xl text-slate-600 transition hover:bg-slate-100"
                   >
-                    <FaEllipsisV />
+                    <FaEllipsisV className="text-xs sm:text-sm" />
                   </button>
 
                   {activeMenu === file.id && (
                     <div
                       onClick={(event) => event.stopPropagation()}
-                      className="absolute right-0 top-12 z-50 w-48 overflow-hidden rounded-xl border border-slate-200 bg-white py-2 shadow-xl"
+                      className="absolute right-0 top-10 sm:top-12 z-50 w-40 sm:w-48 overflow-hidden rounded-xl border border-slate-200 bg-white py-2 shadow-xl"
                     >
                       <button
                         type="button"
                         onClick={() => openPreview(file)}
-                        className="flex w-full items-center gap-3 px-4 py-3 text-left text-sm font-medium text-slate-700 transition hover:bg-blue-50 hover:text-blue-600"
+                        className="flex w-full items-center gap-2 sm:gap-3 px-3 sm:px-4 py-2 sm:py-3 text-left text-xs sm:text-sm font-medium text-slate-700 transition hover:bg-blue-50 hover:text-blue-600"
                       >
-                        <FaFileAlt />
+                        <FaFileAlt className="text-sm sm:text-base" />
                         Open
                       </button>
 
                       <button
                         type="button"
                         onClick={() => handleOpenShare(file)}
-                        className="flex w-full items-center gap-3 px-4 py-3 text-left text-sm font-medium text-slate-700 transition hover:bg-purple-50 hover:text-purple-600"
+                        className="flex w-full items-center gap-2 sm:gap-3 px-3 sm:px-4 py-2 sm:py-3 text-left text-xs sm:text-sm font-medium text-slate-700 transition hover:bg-purple-50 hover:text-purple-600"
                       >
-                        <FaShareAlt />
+                        <FaShareAlt className="text-sm sm:text-base" />
                         Share
                       </button>
 
                       <button
                         type="button"
                         onClick={() => handleOpenRename(file)}
-                        className="flex w-full items-center gap-3 px-4 py-3 text-left text-sm font-medium text-slate-700 transition hover:bg-orange-50 hover:text-orange-600"
+                        className="flex w-full items-center gap-2 sm:gap-3 px-3 sm:px-4 py-2 sm:py-3 text-left text-xs sm:text-sm font-medium text-slate-700 transition hover:bg-orange-50 hover:text-orange-600"
                       >
-                        <FaEdit />
+                        <FaEdit className="text-sm sm:text-base" />
                         Rename
                       </button>
 
                       <button
                         type="button"
                         onClick={() => openDownloadConfirmation(file)}
-                        className="flex w-full items-center gap-3 px-4 py-3 text-left text-sm font-medium text-slate-700 transition hover:bg-blue-50 hover:text-blue-600"
+                        className="flex w-full items-center gap-2 sm:gap-3 px-3 sm:px-4 py-2 sm:py-3 text-left text-xs sm:text-sm font-medium text-slate-700 transition hover:bg-blue-50 hover:text-blue-600"
                       >
-                        <FaDownload />
+                        <FaDownload className="text-sm sm:text-base" />
                         Download
                       </button>
 
@@ -1007,9 +1009,9 @@ function MyFiles() {
                       <button
                         type="button"
                         onClick={() => openDeleteConfirmation(file)}
-                        className="flex w-full items-center gap-3 px-4 py-3 text-left text-sm font-medium text-red-500 transition hover:bg-red-50"
+                        className="flex w-full items-center gap-2 sm:gap-3 px-3 sm:px-4 py-2 sm:py-3 text-left text-xs sm:text-sm font-medium text-red-500 transition hover:bg-red-50"
                       >
-                        <FaTrash />
+                        <FaTrash className="text-sm sm:text-base" />
                         Delete
                       </button>
                     </div>
@@ -1021,39 +1023,39 @@ function MyFiles() {
         )}
       </main>
 
-      {/* Upload Progress Modal */}
+      {/* Upload Progress Modal - Responsive */}
       {uploading && uploadFile && (
-        <div className="fixed bottom-6 right-6 z-[300] w-[380px] overflow-hidden rounded-[26px] border border-slate-200 bg-white shadow-2xl">
-          <div className="p-5">
-            <div className="mb-4 flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-blue-100 text-blue-600">
-                  <FaCloudUploadAlt className="text-xl" />
+        <div className="fixed bottom-3 sm:bottom-6 right-3 sm:right-6 z-[300] w-[calc(100vw-1.5rem)] sm:w-[380px] overflow-hidden rounded-[20px] sm:rounded-[26px] border border-slate-200 bg-white shadow-2xl">
+          <div className="p-4 sm:p-5">
+            <div className="mb-3 sm:mb-4 flex items-center justify-between">
+              <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+                <div className="flex h-10 w-10 sm:h-12 sm:w-12 flex-shrink-0 items-center justify-center rounded-2xl bg-blue-100 text-blue-600">
+                  <FaCloudUploadAlt className="text-base sm:text-xl" />
                 </div>
 
                 <div className="min-w-0">
-                  <p className="text-sm font-bold text-slate-800">
+                  <p className="text-xs sm:text-sm font-bold text-slate-800">
                     Uploading
                   </p>
-                  <p className="max-w-[200px] truncate text-xs text-slate-500">
+                  <p className="max-w-[120px] sm:max-w-[200px] truncate text-[10px] sm:text-xs text-slate-500">
                     {uploadFile.name}
                   </p>
                 </div>
               </div>
 
-              <span className="text-xl font-bold text-blue-600">
+              <span className="text-lg sm:text-xl font-bold text-blue-600">
                 {uploadProgress}%
               </span>
             </div>
 
-            <div className="mb-3 h-2.5 w-full overflow-hidden rounded-full bg-slate-100">
+            <div className="mb-2 sm:mb-3 h-2 sm:h-2.5 w-full overflow-hidden rounded-full bg-slate-100">
               <div
                 style={{ width: `${uploadProgress}%` }}
                 className="h-full rounded-full bg-blue-600 transition-all duration-300"
               />
             </div>
 
-            <div className="flex items-center justify-between text-xs text-slate-500">
+            <div className="flex items-center justify-between text-[10px] sm:text-xs text-slate-500">
               <span>
                 {formatBytes(uploadLoaded)} of {formatBytes(uploadTotal)}
               </span>
@@ -1063,42 +1065,42 @@ function MyFiles() {
         </div>
       )}
 
-      {/* Confirmation Modal */}
+      {/* Confirmation Modal - Responsive */}
       {confirmModal && (
-        <div className="fixed inset-0 z-[200] flex items-center justify-center bg-slate-950/60 p-4 backdrop-blur-sm">
-          <div className="w-full max-w-md overflow-hidden rounded-3xl bg-white shadow-2xl">
-            <div className="p-6">
+        <div className="fixed inset-0 z-[200] flex items-center justify-center bg-slate-950/60 p-3 sm:p-4 backdrop-blur-sm">
+          <div className="w-full max-w-md overflow-hidden rounded-2xl sm:rounded-3xl bg-white shadow-2xl">
+            <div className="p-4 sm:p-6">
               <div
-                className={`mb-5 flex h-14 w-14 items-center justify-center rounded-2xl ${confirmModal.type === "delete"
+                className={`mb-4 sm:mb-5 flex h-12 w-12 sm:h-14 sm:w-14 items-center justify-center rounded-2xl ${confirmModal.type === "delete"
                   ? "bg-red-100 text-red-500"
                   : "bg-blue-100 text-blue-600"
                   }`}
               >
                 {confirmModal.type === "delete" ? (
-                  <FaTrash className="text-xl" />
+                  <FaTrash className="text-base sm:text-xl" />
                 ) : (
-                  <FaDownload className="text-xl" />
+                  <FaDownload className="text-base sm:text-xl" />
                 )}
               </div>
 
-              <h2 className="text-xl font-bold text-slate-800">
+              <h2 className="text-lg sm:text-xl font-bold text-slate-800">
                 {confirmModal.type === "delete"
                   ? "Move file to trash?"
                   : "Download file?"}
               </h2>
 
-              <p className="mt-3 text-sm leading-6 text-slate-500">
+              <p className="mt-2 sm:mt-3 text-xs sm:text-sm leading-5 sm:leading-6 text-slate-500">
                 {confirmModal.type === "delete"
                   ? `Are you sure you want to move "${confirmModal.file.original_name}" to trash?`
                   : `Do you want to download "${confirmModal.file.original_name}" (${formatBytes(confirmModal.file.size)})?`}
               </p>
             </div>
 
-            <div className="flex justify-end gap-3 border-t border-slate-100 bg-slate-50 px-6 py-4">
+            <div className="flex flex-col sm:flex-row justify-end gap-2 sm:gap-3 border-t border-slate-100 bg-slate-50 px-4 sm:px-6 py-3 sm:py-4">
               <button
                 type="button"
                 onClick={closeConfirmation}
-                className="rounded-xl px-5 py-2.5 text-sm font-semibold text-slate-600 transition hover:bg-slate-200"
+                className="rounded-xl px-4 sm:px-5 py-2 sm:py-2.5 text-xs sm:text-sm font-semibold text-slate-600 transition hover:bg-slate-200 order-2 sm:order-1"
               >
                 Cancel
               </button>
@@ -1112,7 +1114,7 @@ function MyFiles() {
                     handleDownload(confirmModal.file);
                   }
                 }}
-                className={`rounded-xl px-5 py-2.5 text-sm font-semibold text-white shadow-lg transition ${confirmModal.type === "delete"
+                className={`rounded-xl px-4 sm:px-5 py-2 sm:py-2.5 text-xs sm:text-sm font-semibold text-white shadow-lg transition order-1 sm:order-2 ${confirmModal.type === "delete"
                   ? "bg-red-500 shadow-red-200 hover:bg-red-600"
                   : "bg-blue-600 shadow-blue-200 hover:bg-blue-700"
                   }`}
@@ -1126,20 +1128,20 @@ function MyFiles() {
         </div>
       )}
 
-      {/* Rename Modal */}
+      {/* Rename Modal - Responsive */}
       {renameFile && (
-        <div className="fixed inset-0 z-[220] flex items-center justify-center bg-slate-950/60 p-4 backdrop-blur-sm">
-          <form onSubmit={handleRename} className="w-full max-w-md overflow-hidden rounded-3xl bg-white shadow-2xl">
-            <div className="p-6">
-              <div className="mb-5 flex h-14 w-14 items-center justify-center rounded-2xl bg-orange-100 text-orange-600">
-                <FaEdit className="text-xl" />
+        <div className="fixed inset-0 z-[220] flex items-center justify-center bg-slate-950/60 p-3 sm:p-4 backdrop-blur-sm">
+          <form onSubmit={handleRename} className="w-full max-w-md overflow-hidden rounded-2xl sm:rounded-3xl bg-white shadow-2xl">
+            <div className="p-4 sm:p-6">
+              <div className="mb-4 sm:mb-5 flex h-12 w-12 sm:h-14 sm:w-14 items-center justify-center rounded-2xl bg-orange-100 text-orange-600">
+                <FaEdit className="text-base sm:text-xl" />
               </div>
 
-              <h2 className="text-xl font-bold text-slate-800">
+              <h2 className="text-lg sm:text-xl font-bold text-slate-800">
                 Rename File
               </h2>
 
-              <p className="mt-2 text-sm text-slate-500">
+              <p className="mt-1 sm:mt-2 text-xs sm:text-sm text-slate-500">
                 Enter a new name for this file.
               </p>
 
@@ -1148,16 +1150,16 @@ function MyFiles() {
                 type="text"
                 value={renameValue}
                 onChange={(event) => setRenameValue(event.target.value)}
-                className="mt-5 w-full rounded-xl border border-slate-200 px-4 py-3 text-sm text-slate-700 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+                className="mt-4 sm:mt-5 w-full rounded-xl border border-slate-200 px-3 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm text-slate-700 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
               />
             </div>
 
-            <div className="flex justify-end gap-3 border-t border-slate-100 bg-slate-50 px-6 py-4">
+            <div className="flex flex-col sm:flex-row justify-end gap-2 sm:gap-3 border-t border-slate-100 bg-slate-50 px-4 sm:px-6 py-3 sm:py-4">
               <button
                 type="button"
                 onClick={closeRename}
                 disabled={renaming}
-                className="rounded-xl px-5 py-2.5 text-sm font-semibold text-slate-600 transition hover:bg-slate-200"
+                className="rounded-xl px-4 sm:px-5 py-2 sm:py-2.5 text-xs sm:text-sm font-semibold text-slate-600 transition hover:bg-slate-200 order-2 sm:order-1"
               >
                 Cancel
               </button>
@@ -1165,7 +1167,7 @@ function MyFiles() {
               <button
                 type="submit"
                 disabled={renaming || !renameValue.trim()}
-                className="rounded-xl bg-blue-600 px-5 py-2.5 text-sm font-semibold text-white shadow-lg shadow-blue-200 transition hover:bg-blue-700 disabled:opacity-60"
+                className="rounded-xl bg-blue-600 px-4 sm:px-5 py-2 sm:py-2.5 text-xs sm:text-sm font-semibold text-white shadow-lg shadow-blue-200 transition hover:bg-blue-700 disabled:opacity-60 order-1 sm:order-2"
               >
                 {renaming ? "Renaming..." : "Rename"}
               </button>
@@ -1174,36 +1176,36 @@ function MyFiles() {
         </div>
       )}
 
-      {/* Download Progress Modal */}
+      {/* Download Progress Modal - Responsive */}
       {downloading && downloadFile && (
-        <div className="fixed inset-0 z-[250] flex items-center justify-center bg-slate-950/40 p-4 backdrop-blur-md">
-          <div className="w-full max-w-sm overflow-hidden rounded-[28px] bg-white shadow-2xl">
-            <div className="p-7">
-              <div className="mb-6 flex items-center justify-between">
-                <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-blue-100 text-blue-600">
-                  <FaDownload className="text-xl" />
+        <div className="fixed inset-0 z-[250] flex items-center justify-center bg-slate-950/40 p-3 sm:p-4 backdrop-blur-md">
+          <div className="w-full max-w-sm overflow-hidden rounded-[24px] sm:rounded-[28px] bg-white shadow-2xl">
+            <div className="p-5 sm:p-7">
+              <div className="mb-4 sm:mb-6 flex items-center justify-between">
+                <div className="flex h-12 w-12 sm:h-14 sm:w-14 items-center justify-center rounded-2xl bg-blue-100 text-blue-600">
+                  <FaDownload className="text-base sm:text-xl" />
                 </div>
 
                 <div className="text-right">
-                  <p className="text-2xl font-bold text-slate-800">
+                  <p className="text-xl sm:text-2xl font-bold text-slate-800">
                     {downloadProgress}%
                   </p>
-                  <p className="text-xs text-slate-400">
+                  <p className="text-[10px] sm:text-xs text-slate-400">
                     Downloading
                   </p>
                 </div>
               </div>
 
-              <h2 className="truncate text-lg font-bold text-slate-800">
+              <h2 className="truncate text-base sm:text-lg font-bold text-slate-800">
                 {downloadFile.original_name}
               </h2>
 
-              <p className="mt-2 text-sm text-slate-500">
+              <p className="mt-1 sm:mt-2 text-xs sm:text-sm text-slate-500">
                 {formatBytes(downloadLoaded)} of{" "}
                 {formatBytes(downloadTotal || downloadFile.size)}
               </p>
 
-              <div className="mt-6 h-3 w-full overflow-hidden rounded-full bg-slate-100">
+              <div className="mt-4 sm:mt-6 h-2 sm:h-3 w-full overflow-hidden rounded-full bg-slate-100">
                 <div
                   style={{ width: `${downloadProgress}%` }}
                   className="h-full rounded-full bg-blue-600 transition-all duration-300"
@@ -1213,7 +1215,7 @@ function MyFiles() {
               <button
                 type="button"
                 onClick={cancelDownload}
-                className="mt-7 w-full rounded-2xl bg-slate-100 py-3 text-sm font-semibold text-slate-700 transition hover:bg-red-50 hover:text-red-500"
+                className="mt-5 sm:mt-7 w-full rounded-2xl bg-slate-100 py-2.5 sm:py-3 text-xs sm:text-sm font-semibold text-slate-700 transition hover:bg-red-50 hover:text-red-500"
               >
                 Cancel Download
               </button>
@@ -1222,43 +1224,42 @@ function MyFiles() {
         </div>
       )}
 
-      {/* Preview Modal - Updated to support PDF */}
+      {/* Preview Modal - Responsive */}
       {selectedFile && (
         <div
           onClick={closePreview}
-          className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 p-3 backdrop-blur-xl sm:p-6"
+          className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 p-2 sm:p-3 md:p-6 backdrop-blur-xl"
         >
           <div
             onClick={(event) => event.stopPropagation()}
-            className="relative flex h-[92vh] w-full max-w-6xl flex-col overflow-hidden rounded-[28px] border border-white/20 bg-slate-900/95 shadow-2xl"
+            className="relative flex h-[90vh] sm:h-[92vh] w-full max-w-6xl flex-col overflow-hidden rounded-[20px] sm:rounded-[28px] border border-white/20 bg-slate-900/95 shadow-2xl"
           >
-            <div className="flex items-center justify-between border-b border-white/10 bg-white/5 px-4 py-3 sm:px-6">
-              <div className="flex min-w-0 items-center gap-4">
+            <div className="flex items-center justify-between border-b border-white/10 bg-white/5 px-3 sm:px-6 py-2 sm:py-3">
+              <div className="flex min-w-0 items-center gap-2 sm:gap-4">
                 <button
                   type="button"
                   onClick={closePreview}
-                  className="flex h-9 w-9 items-center justify-center rounded-full bg-red-500 text-lg font-bold text-white shadow-lg transition hover:scale-105"
+                  className="flex h-7 w-7 sm:h-9 sm:w-9 items-center justify-center rounded-full bg-red-500 text-base sm:text-lg font-bold text-white shadow-lg transition hover:scale-105"
                 >
                   ×
                 </button>
 
                 <div className="min-w-0">
-                  <p className="truncate text-sm font-semibold text-white sm:text-base">
+                  <p className="truncate text-xs sm:text-sm font-semibold text-white sm:text-base">
                     {selectedFile.original_name}
                   </p>
-                  <p className="text-xs text-slate-400">
+                  <p className="text-[10px] sm:text-xs text-slate-400">
                     {formatBytes(selectedFile.size)}
                   </p>
                 </div>
               </div>
 
-              {/* Zoom controls only for images */}
               {isImage(selectedFile) && (
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-1 sm:gap-2">
                   <button
                     type="button"
                     onClick={() => setImageZoom((previous) => Math.max(0.5, previous - 0.25))}
-                    className="flex h-9 w-9 items-center justify-center rounded-full bg-white/10 text-xl text-white transition hover:bg-white/20"
+                    className="flex h-7 w-7 sm:h-9 sm:w-9 items-center justify-center rounded-full bg-white/10 text-base sm:text-xl text-white transition hover:bg-white/20"
                   >
                     −
                   </button>
@@ -1266,7 +1267,7 @@ function MyFiles() {
                   <button
                     type="button"
                     onClick={() => setImageZoom(1)}
-                    className="hidden rounded-full bg-white/10 px-3 py-2 text-xs text-white transition hover:bg-white/20 sm:block"
+                    className="hidden sm:block rounded-full bg-white/10 px-2 sm:px-3 py-1 sm:py-2 text-[10px] sm:text-xs text-white transition hover:bg-white/20"
                   >
                     {Math.round(imageZoom * 100)}%
                   </button>
@@ -1274,44 +1275,43 @@ function MyFiles() {
                   <button
                     type="button"
                     onClick={() => setImageZoom((previous) => Math.min(3, previous + 0.25))}
-                    className="flex h-9 w-9 items-center justify-center rounded-full bg-white/10 text-xl text-white transition hover:bg-white/20"
+                    className="flex h-7 w-7 sm:h-9 sm:w-9 items-center justify-center rounded-full bg-white/10 text-base sm:text-xl text-white transition hover:bg-white/20"
                   >
                     +
                   </button>
                 </div>
               )}
 
-              {/* PDF page counter */}
               {isPdf(selectedFile) && previewUrl && (
                 <div className="flex items-center gap-2">
-                  <span className="rounded-full bg-white/10 px-3 py-2 text-xs text-white">
+                  <span className="rounded-full bg-white/10 px-2 sm:px-3 py-1 sm:py-2 text-[10px] sm:text-xs text-white">
                     PDF
                   </span>
                 </div>
               )}
             </div>
 
-            <div className="relative flex flex-1 items-center justify-center overflow-hidden bg-black/30 p-4 sm:p-8">
+            <div className="relative flex flex-1 items-center justify-center overflow-hidden bg-black/30 p-2 sm:p-4 md:p-8">
               {previewItems.length > 1 && (
                 <button
                   type="button"
                   onClick={openPreviousPreview}
-                  className="absolute left-3 z-20 flex h-11 w-11 items-center justify-center rounded-full bg-black/40 text-2xl text-white transition hover:bg-black/70 sm:left-6"
+                  className="absolute left-1 sm:left-3 md:left-6 z-20 flex h-8 w-8 sm:h-11 sm:w-11 items-center justify-center rounded-full bg-black/40 text-lg sm:text-2xl text-white transition hover:bg-black/70"
                 >
                   ‹
                 </button>
               )}
 
               {previewLoading ? (
-                <div className="flex flex-col items-center gap-4">
-                  <div className="h-12 w-12 animate-spin rounded-full border-4 border-white/20 border-t-white" />
-                  <p className="text-sm text-white">
+                <div className="flex flex-col items-center gap-3 sm:gap-4">
+                  <div className="h-8 w-8 sm:h-12 sm:w-12 animate-spin rounded-full border-4 border-white/20 border-t-white" />
+                  <p className="text-xs sm:text-sm text-white">
                     Loading preview...
                   </p>
                 </div>
               ) : previewError ? (
-                <div className="rounded-2xl bg-red-500/10 p-8 text-center text-red-300">
-                  {previewError}
+                <div className="rounded-2xl bg-red-500/10 p-4 sm:p-8 text-center text-red-300">
+                  <p className="text-xs sm:text-sm">{previewError}</p>
                 </div>
               ) : previewUrl ? (
                 isImage(selectedFile) ? (
@@ -1320,7 +1320,7 @@ function MyFiles() {
                       src={previewUrl}
                       alt={selectedFile.original_name}
                       style={{ transform: `scale(${imageZoom})` }}
-                      className="max-h-[72vh] max-w-full rounded-2xl object-contain shadow-2xl transition-transform duration-200"
+                      className="max-h-[60vh] sm:max-h-[72vh] max-w-full rounded-2xl object-contain shadow-2xl transition-transform duration-200"
                     />
                   </div>
                 ) : isVideo(selectedFile) ? (
@@ -1328,7 +1328,7 @@ function MyFiles() {
                     src={previewUrl}
                     controls
                     autoPlay
-                    className="max-h-[72vh] max-w-full rounded-2xl shadow-2xl"
+                    className="max-h-[60vh] sm:max-h-[72vh] max-w-full rounded-2xl shadow-2xl"
                   />
                 ) : isPdf(selectedFile) ? (
                   <div className="flex h-full w-full items-center justify-center">
@@ -1346,14 +1346,14 @@ function MyFiles() {
                 <button
                   type="button"
                   onClick={openNextPreview}
-                  className="absolute right-3 z-20 flex h-11 w-11 items-center justify-center rounded-full bg-black/40 text-2xl text-white transition hover:bg-black/70 sm:right-6"
+                  className="absolute right-1 sm:right-3 md:right-6 z-20 flex h-8 w-8 sm:h-11 sm:w-11 items-center justify-center rounded-full bg-black/40 text-lg sm:text-2xl text-white transition hover:bg-black/70"
                 >
                   ›
                 </button>
               )}
             </div>
 
-            <div className="flex items-center justify-between border-t border-white/10 bg-white/5 px-5 py-3 text-xs text-slate-400">
+            <div className="flex items-center justify-between border-t border-white/10 bg-white/5 px-3 sm:px-5 py-2 sm:py-3 text-[10px] sm:text-xs text-slate-400">
               <span>
                 {currentPreviewIndex >= 0
                   ? `${currentPreviewIndex + 1} of ${previewItems.length}`
@@ -1367,16 +1367,16 @@ function MyFiles() {
         </div>
       )}
 
-      {/* Share Modal */}
+      {/* Share Modal - Responsive */}
       {shareFile && (
-        <div className="fixed inset-0 z-[150] flex items-center justify-center bg-slate-950/70 p-4">
+        <div className="fixed inset-0 z-[150] flex items-center justify-center bg-slate-950/70 p-3 sm:p-4">
           <div className="flex max-h-[90vh] w-full max-w-2xl flex-col overflow-hidden rounded-2xl bg-white shadow-2xl">
-            <div className="flex items-center justify-between border-b border-slate-200 px-6 py-5">
-              <div>
-                <h2 className="text-xl font-bold text-slate-800">
+            <div className="flex items-center justify-between border-b border-slate-200 px-4 sm:px-6 py-4 sm:py-5">
+              <div className="min-w-0">
+                <h2 className="text-base sm:text-xl font-bold text-slate-800">
                   Share File
                 </h2>
-                <p className="mt-1 max-w-md truncate text-sm text-slate-500">
+                <p className="mt-0.5 sm:mt-1 max-w-[180px] sm:max-w-md truncate text-xs sm:text-sm text-slate-500">
                   {shareFile.original_name}
                 </p>
               </div>
@@ -1384,46 +1384,46 @@ function MyFiles() {
               <button
                 type="button"
                 onClick={handleCloseShare}
-                className="flex h-10 w-10 items-center justify-center rounded-xl bg-slate-100 text-slate-600 transition hover:bg-red-50 hover:text-red-500"
+                className="flex h-8 w-8 sm:h-10 sm:w-10 flex-shrink-0 items-center justify-center rounded-xl bg-slate-100 text-slate-600 transition hover:bg-red-50 hover:text-red-500"
               >
-                <FaTimes />
+                <FaTimes className="text-sm sm:text-base" />
               </button>
             </div>
 
-            <div className="overflow-y-auto p-6">
+            <div className="overflow-y-auto p-4 sm:p-6">
               {shareError && (
-                <div className="mb-5 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-600">
+                <div className="mb-4 sm:mb-5 rounded-xl border border-red-200 bg-red-50 px-3 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm text-red-600">
                   {shareError}
                 </div>
               )}
 
               {shareSuccess && (
-                <div className="mb-5 rounded-xl border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-600">
+                <div className="mb-4 sm:mb-5 rounded-xl border border-green-200 bg-green-50 px-3 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm text-green-600">
                   {shareSuccess}
                 </div>
               )}
 
-              <form onSubmit={handleShareWithUser} className="mb-8">
-                <label className="mb-2 block text-sm font-semibold text-slate-700">
+              <form onSubmit={handleShareWithUser} className="mb-6 sm:mb-8">
+                <label className="mb-1 sm:mb-2 block text-xs sm:text-sm font-semibold text-slate-700">
                   Add people
                 </label>
 
-                <div className="flex gap-2">
+                <div className="flex flex-col sm:flex-row gap-2">
                   <div className="relative flex-1">
-                    <FaUserPlus className="absolute left-4 top-1/2 -translate-y-1/2 text-sm text-slate-400" />
+                    <FaUserPlus className="absolute left-3 sm:left-4 top-1/2 -translate-y-1/2 text-xs sm:text-sm text-slate-400" />
                     <input
                       type="email"
                       value={shareEmail}
                       onChange={(event) => setShareEmail(event.target.value)}
                       placeholder="Enter registered user email"
-                      className="w-full rounded-xl border border-slate-200 py-3 pl-11 pr-4 text-sm outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+                      className="w-full rounded-xl border border-slate-200 py-2 sm:py-3 pl-8 sm:pl-11 pr-3 sm:pr-4 text-xs sm:text-sm outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
                     />
                   </div>
 
                   <select
                     value={shareRole}
                     onChange={(event) => setShareRole(event.target.value)}
-                    className="rounded-xl border border-slate-200 bg-white px-3 text-sm font-medium text-slate-700"
+                    className="rounded-xl border border-slate-200 bg-white px-2 sm:px-3 py-2 sm:py-3 text-xs sm:text-sm font-medium text-slate-700"
                   >
                     <option value="viewer">Viewer</option>
                     <option value="editor">Editor</option>
@@ -1432,17 +1432,17 @@ function MyFiles() {
                   <button
                     type="submit"
                     disabled={shareLoading}
-                    className="rounded-xl bg-blue-600 px-5 text-sm font-semibold text-white transition hover:bg-blue-700 disabled:opacity-60"
+                    className="rounded-xl bg-blue-600 px-4 sm:px-5 py-2 sm:py-3 text-xs sm:text-sm font-semibold text-white transition hover:bg-blue-700 disabled:opacity-60"
                   >
                     Add
                   </button>
                 </div>
               </form>
 
-              <div className="mb-8">
-                <div className="mb-3 flex items-center gap-2">
-                  <FaLink className="text-blue-600" />
-                  <h3 className="font-semibold text-slate-800">
+              <div className="mb-6 sm:mb-8">
+                <div className="mb-2 sm:mb-3 flex items-center gap-2">
+                  <FaLink className="text-blue-600 text-sm sm:text-base" />
+                  <h3 className="text-xs sm:text-sm font-semibold text-slate-800">
                     General access
                   </h3>
                 </div>
@@ -1452,13 +1452,13 @@ function MyFiles() {
                     type="button"
                     disabled={shareLoading}
                     onClick={() => handleLinkAccessChange("restricted")}
-                    className="flex w-full items-center justify-between border-b border-slate-200 px-4 py-4 text-left"
+                    className="flex w-full items-center justify-between border-b border-slate-200 px-3 sm:px-4 py-3 sm:py-4 text-left"
                   >
                     <div>
-                      <p className="font-semibold text-slate-700">
+                      <p className="text-xs sm:text-sm font-semibold text-slate-700">
                         Restricted
                       </p>
-                      <p className="mt-1 text-xs text-slate-500">
+                      <p className="mt-0.5 sm:mt-1 text-[10px] sm:text-xs text-slate-500">
                         Only people you add can access this file.
                       </p>
                     </div>
@@ -1468,13 +1468,13 @@ function MyFiles() {
                     type="button"
                     disabled={shareLoading}
                     onClick={() => handleLinkAccessChange("anyone_with_link")}
-                    className="flex w-full items-center justify-between px-4 py-4 text-left"
+                    className="flex w-full items-center justify-between px-3 sm:px-4 py-3 sm:py-4 text-left"
                   >
                     <div>
-                      <p className="font-semibold text-slate-700">
+                      <p className="text-xs sm:text-sm font-semibold text-slate-700">
                         Anyone with the link
                       </p>
-                      <p className="mt-1 text-xs text-slate-500">
+                      <p className="mt-0.5 sm:mt-1 text-[10px] sm:text-xs text-slate-500">
                         Anyone with the link can open this file.
                       </p>
                     </div>
@@ -1482,18 +1482,18 @@ function MyFiles() {
                 </div>
 
                 {sharingData?.access_type === "anyone_with_link" && sharingData?.share_token && (
-                  <div className="mt-4 flex gap-2">
+                  <div className="mt-3 sm:mt-4 flex flex-col sm:flex-row gap-2">
                     <input
                       readOnly
                       value={getPublicShareUrl(sharingData.share_token)}
-                      className="min-w-0 flex-1 rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-600"
+                      className="min-w-0 flex-1 rounded-xl border border-slate-200 bg-slate-50 px-3 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm text-slate-600"
                     />
                     <button
                       type="button"
                       onClick={handleCopyShareLink}
-                      className="flex items-center gap-2 rounded-xl border border-slate-200 px-4 py-3 text-sm font-semibold text-blue-600 transition hover:bg-blue-50"
+                      className="flex items-center justify-center gap-2 rounded-xl border border-slate-200 px-3 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm font-semibold text-blue-600 transition hover:bg-blue-50"
                     >
-                      <FaCopy />
+                      <FaCopy className="text-sm sm:text-base" />
                       Copy
                     </button>
                   </div>
@@ -1501,7 +1501,7 @@ function MyFiles() {
               </div>
 
               <div>
-                <h3 className="mb-3 font-semibold text-slate-800">
+                <h3 className="mb-2 sm:mb-3 text-xs sm:text-sm font-semibold text-slate-800">
                   People with access
                 </h3>
 
@@ -1510,26 +1510,26 @@ function MyFiles() {
                     {sharingData.shared_users.map((user) => (
                       <div
                         key={user.id}
-                        className="flex items-center justify-between rounded-xl border border-slate-200 px-4 py-3"
+                        className="flex items-center justify-between rounded-xl border border-slate-200 px-3 sm:px-4 py-2 sm:py-3"
                       >
                         <div className="min-w-0">
-                          <p className="truncate font-semibold text-slate-700">
+                          <p className="truncate text-xs sm:text-sm font-semibold text-slate-700">
                             {user.full_name}
                           </p>
-                          <p className="truncate text-xs text-slate-500">
+                          <p className="truncate text-[10px] sm:text-xs text-slate-500">
                             {user.email}
                           </p>
                         </div>
 
-                        <div className="ml-4 flex items-center gap-3">
-                          <span className="rounded-lg bg-slate-100 px-3 py-1 text-xs font-semibold capitalize text-slate-600">
+                        <div className="ml-2 sm:ml-4 flex items-center gap-2 sm:gap-3">
+                          <span className="rounded-lg bg-slate-100 px-2 sm:px-3 py-0.5 sm:py-1 text-[10px] sm:text-xs font-semibold capitalize text-slate-600">
                             {user.role}
                           </span>
 
                           <button
                             type="button"
                             onClick={() => handleRemoveSharedUser(user.id)}
-                            className="text-xs font-semibold text-red-500"
+                            className="text-[10px] sm:text-xs font-semibold text-red-500"
                           >
                             Remove
                           </button>
@@ -1538,8 +1538,8 @@ function MyFiles() {
                     ))}
                   </div>
                 ) : (
-                  <div className="rounded-xl border border-dashed border-slate-300 py-8 text-center">
-                    <p className="text-sm text-slate-500">
+                  <div className="rounded-xl border border-dashed border-slate-300 py-6 sm:py-8 text-center">
+                    <p className="text-xs sm:text-sm text-slate-500">
                       This file has not been shared with anyone yet.
                     </p>
                   </div>

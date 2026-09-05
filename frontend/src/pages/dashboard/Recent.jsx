@@ -328,7 +328,7 @@ function Recent() {
       ) {
 
         return (
-          <FaImage className="text-lg text-purple-500" />
+          <FaImage className="text-base sm:text-lg text-purple-500" />
         );
 
       }
@@ -338,13 +338,13 @@ function Recent() {
       ) {
 
         return (
-          <FaVideo className="text-lg text-red-500" />
+          <FaVideo className="text-base sm:text-lg text-red-500" />
         );
 
       }
 
       return (
-        <FaFileAlt className="text-lg text-blue-500" />
+        <FaFileAlt className="text-base sm:text-lg text-blue-500" />
       );
 
     };
@@ -1054,17 +1054,12 @@ function Recent() {
 
     return (
       <div className="flex min-h-screen items-center justify-center bg-slate-100">
-
-        <div className="flex flex-col items-center">
-
-          <FaCloud className="mb-4 animate-pulse text-5xl text-blue-600" />
-
-          <p className="text-lg font-semibold text-slate-600">
+        <div className="flex flex-col items-center px-4">
+          <FaCloud className="mb-3 sm:mb-4 animate-pulse text-4xl sm:text-5xl text-blue-600" />
+          <p className="text-base sm:text-lg font-semibold text-slate-600">
             Loading recent files...
           </p>
-
         </div>
-
       </div>
     );
 
@@ -1077,7 +1072,7 @@ function Recent() {
 
       {success && (
 
-        <div className="fixed right-4 top-4 z-[200] max-w-sm rounded-xl bg-green-600 px-5 py-3 text-sm font-medium text-white shadow-xl">
+        <div className="fixed right-3 sm:right-4 top-3 sm:top-4 z-[200] max-w-[calc(100vw-2rem)] sm:max-w-sm rounded-xl bg-green-600 px-3 sm:px-5 py-2 sm:py-3 text-xs sm:text-sm font-medium text-white shadow-xl">
           {success}
         </div>
 
@@ -1086,9 +1081,9 @@ function Recent() {
 
       {error && (
 
-        <div className="fixed right-4 top-4 z-[200] flex max-w-sm items-center gap-4 rounded-xl bg-red-500 px-5 py-3 text-sm font-medium text-white shadow-xl">
+        <div className="fixed right-3 sm:right-4 top-3 sm:top-4 z-[200] flex max-w-[calc(100vw-2rem)] sm:max-w-sm items-center gap-2 sm:gap-4 rounded-xl bg-red-500 px-3 sm:px-5 py-2 sm:py-3 text-xs sm:text-sm font-medium text-white shadow-xl">
 
-          <span>
+          <span className="truncate">
             {error}
           </span>
 
@@ -1097,9 +1092,9 @@ function Recent() {
             onClick={() =>
               setError("")
             }
-            className="ml-auto"
+            className="ml-auto flex-shrink-0"
           >
-            <FaTimes />
+            <FaTimes className="text-sm sm:text-base" />
           </button>
 
         </div>
@@ -1109,28 +1104,28 @@ function Recent() {
 
       <header className="sticky top-0 z-30 border-b border-slate-200 bg-white">
 
-        <div className="mx-auto flex min-h-[72px] max-w-[1200px] items-center justify-between gap-6 px-4 sm:px-6">
+        <div className="mx-auto flex min-h-[60px] sm:h-[72px] max-w-[1200px] items-center justify-between gap-3 sm:gap-6 px-3 sm:px-6">
 
-          <div className="flex min-w-0 items-center gap-4">
+          <div className="flex min-w-0 items-center gap-2 sm:gap-4">
 
             <button
               type="button"
               onClick={() =>
                 navigate("/dashboard")
               }
-              className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl border border-slate-200 text-slate-600 transition hover:bg-slate-100"
+              className="flex h-8 w-8 sm:h-10 sm:w-10 flex-shrink-0 items-center justify-center rounded-xl border border-slate-200 text-slate-600 transition hover:bg-slate-100"
             >
-              <FaArrowLeft />
+              <FaArrowLeft className="text-sm sm:text-base" />
             </button>
 
 
             <div className="min-w-0">
 
-              <h1 className="truncate text-xl font-bold text-slate-800">
-                Recent Files
+              <h1 className="truncate text-base sm:text-xl font-bold text-slate-800">
+                All Files
               </h1>
 
-              <p className="text-xs text-slate-500">
+              <p className="text-[10px] sm:text-xs text-slate-500 truncate">
                 Your recently uploaded files
               </p>
 
@@ -1139,9 +1134,9 @@ function Recent() {
           </div>
 
 
-          <div className="relative hidden w-full max-w-[420px] sm:block">
+          <div className="relative hidden w-full max-w-[180px] sm:max-w-[300px] md:max-w-[420px] sm:block">
 
-            <FaSearch className="absolute left-4 top-1/2 -translate-y-1/2 text-sm text-slate-400" />
+            <FaSearch className="absolute left-3 sm:left-4 top-1/2 -translate-y-1/2 text-xs sm:text-sm text-slate-400" />
 
             <input
               type="text"
@@ -1152,7 +1147,7 @@ function Recent() {
                 )
               }
               placeholder="Search recent files..."
-              className="w-full rounded-xl bg-slate-100 py-3 pl-11 pr-4 text-sm text-slate-700 outline-none focus:ring-2 focus:ring-blue-200"
+              className="w-full rounded-xl bg-slate-100 py-2 sm:py-3 pl-8 sm:pl-11 pr-3 sm:pr-4 text-xs sm:text-sm text-slate-700 outline-none focus:ring-2 focus:ring-blue-200"
             />
 
           </div>
@@ -1160,11 +1155,11 @@ function Recent() {
         </div>
 
 
-        <div className="border-t border-slate-100 px-4 py-3 sm:hidden">
+        <div className="border-t border-slate-100 px-3 sm:px-4 py-2 sm:py-3 sm:hidden">
 
           <div className="relative">
 
-            <FaSearch className="absolute left-4 top-1/2 -translate-y-1/2 text-sm text-slate-400" />
+            <FaSearch className="absolute left-3 sm:left-4 top-1/2 -translate-y-1/2 text-xs sm:text-sm text-slate-400" />
 
             <input
               type="text"
@@ -1175,7 +1170,7 @@ function Recent() {
                 )
               }
               placeholder="Search recent files..."
-              className="w-full rounded-xl bg-slate-100 py-3 pl-11 pr-4 text-sm text-slate-700 outline-none focus:ring-2 focus:ring-blue-200"
+              className="w-full rounded-xl bg-slate-100 py-2 sm:py-3 pl-8 sm:pl-11 pr-3 sm:pr-4 text-xs sm:text-sm text-slate-700 outline-none focus:ring-2 focus:ring-blue-200"
             />
 
           </div>
@@ -1185,15 +1180,15 @@ function Recent() {
       </header>
 
 
-      <main className="mx-auto max-w-[1200px] px-4 py-6 sm:px-6 sm:py-8">
+      <main className="mx-auto max-w-[1200px] px-3 sm:px-6 py-4 sm:py-8">
 
-        <div className="mb-6">
+        <div className="mb-4 sm:mb-6">
 
-          <h2 className="text-2xl font-bold text-slate-800">
-            Recent Files
+          <h2 className="text-lg sm:text-2xl font-bold text-slate-800">
+            All Files
           </h2>
 
-          <p className="mt-1 text-sm text-slate-500">
+          <p className="mt-0.5 sm:mt-1 text-xs sm:text-sm text-slate-500">
 
             {filteredFiles.length}{" "}
 
@@ -1210,15 +1205,15 @@ function Recent() {
 
         {filteredFiles.length === 0 ? (
 
-          <div className="flex min-h-[400px] flex-col items-center justify-center rounded-2xl border border-slate-200 bg-white p-8 text-center shadow-sm">
+          <div className="flex min-h-[300px] sm:min-h-[400px] flex-col items-center justify-center rounded-2xl border border-slate-200 bg-white p-6 sm:p-8 text-center shadow-sm">
 
-            <FaCloud className="mb-5 text-6xl text-slate-300" />
+            <FaCloud className="mb-3 sm:mb-5 text-4xl sm:text-6xl text-slate-300" />
 
-            <h3 className="text-lg font-bold text-slate-700">
+            <h3 className="text-base sm:text-lg font-bold text-slate-700">
               No recent files found
             </h3>
 
-            <p className="mt-2 text-sm text-slate-500">
+            <p className="mt-1 sm:mt-2 text-xs sm:text-sm text-slate-500">
 
               {searchQuery
                 ? "Try searching for a different file."
@@ -1232,7 +1227,7 @@ function Recent() {
               onClick={() =>
                 navigate("/dashboard")
               }
-              className="mt-6 rounded-xl bg-blue-600 px-5 py-3 text-sm font-semibold text-white transition hover:bg-blue-700"
+              className="mt-4 sm:mt-6 rounded-xl bg-blue-600 px-4 sm:px-5 py-2 sm:py-3 text-xs sm:text-sm font-semibold text-white transition hover:bg-blue-700"
             >
               Go to Dashboard
             </button>
@@ -1248,7 +1243,7 @@ function Recent() {
 
                 <div
                   key={file.id}
-                  className="relative flex items-center justify-between gap-3 border-b border-slate-100 px-4 py-4 last:border-b-0 sm:px-6"
+                  className="relative flex items-center justify-between gap-2 sm:gap-3 border-b border-slate-100 px-3 sm:px-6 py-3 sm:py-4 last:border-b-0"
                 >
 
                   <button
@@ -1256,10 +1251,10 @@ function Recent() {
                     onClick={() =>
                       handlePreviewFile(file)
                     }
-                    className="flex min-w-0 flex-1 items-center gap-4 text-left"
+                    className="flex min-w-0 flex-1 items-center gap-2 sm:gap-4 text-left"
                   >
 
-                    <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-xl bg-slate-100">
+                    <div className="flex h-10 w-10 sm:h-12 sm:w-12 flex-shrink-0 items-center justify-center rounded-xl bg-slate-100">
 
                       {getFileIcon(file)}
 
@@ -1268,11 +1263,11 @@ function Recent() {
 
                     <div className="min-w-0">
 
-                      <p className="truncate font-semibold text-slate-700">
+                      <p className="truncate text-xs sm:text-sm font-semibold text-slate-700">
                         {file.original_name}
                       </p>
 
-                      <p className="mt-1 text-xs text-slate-500">
+                      <p className="mt-0.5 sm:mt-1 text-[10px] sm:text-xs text-slate-500">
 
                         {getFileLabel(file)}
 
@@ -1289,17 +1284,17 @@ function Recent() {
                   </button>
 
 
-                  <div className="relative ml-2 flex flex-shrink-0 items-center gap-1">
+                  <div className="relative ml-1 sm:ml-2 flex flex-shrink-0 items-center gap-0.5 sm:gap-1">
 
                     <button
                       type="button"
                       onClick={() =>
                         handlePreviewFile(file)
                       }
-                      className="hidden h-10 w-10 items-center justify-center rounded-xl text-blue-600 transition hover:bg-blue-50 sm:flex"
+                      className="hidden sm:flex h-8 w-8 sm:h-10 sm:w-10 items-center justify-center rounded-xl text-blue-600 transition hover:bg-blue-50"
                       title="Open"
                     >
-                      <FaEye />
+                      <FaEye className="text-xs sm:text-sm" />
                     </button>
 
 
@@ -1308,10 +1303,10 @@ function Recent() {
                       onClick={() =>
                         handleDownload(file)
                       }
-                      className="hidden h-10 w-10 items-center justify-center rounded-xl text-blue-600 transition hover:bg-blue-50 sm:flex"
+                      className="hidden sm:flex h-8 w-8 sm:h-10 sm:w-10 items-center justify-center rounded-xl text-blue-600 transition hover:bg-blue-50"
                       title="Download"
                     >
-                      <FaDownload />
+                      <FaDownload className="text-xs sm:text-sm" />
                     </button>
 
 
@@ -1324,14 +1319,14 @@ function Recent() {
                             : file.id
                         )
                       }
-                      className={`flex h-10 w-10 items-center justify-center rounded-xl transition ${
+                      className={`flex h-8 w-8 sm:h-10 sm:w-10 items-center justify-center rounded-xl transition ${
                         openMenuId === file.id
                           ? "bg-slate-100 text-slate-800"
                           : "text-slate-500 hover:bg-slate-100"
                       }`}
                       title="More options"
                     >
-                      <FaEllipsisV />
+                      <FaEllipsisV className="text-xs sm:text-sm" />
                     </button>
 
 
@@ -1340,7 +1335,7 @@ function Recent() {
 
                       <div
                         ref={menuRef}
-                        className="absolute right-0 top-12 z-[100] w-56 overflow-hidden rounded-2xl border border-slate-200 bg-white py-2 shadow-2xl"
+                        className="absolute right-0 top-10 sm:top-12 z-[100] w-48 sm:w-56 overflow-hidden rounded-2xl border border-slate-200 bg-white py-2 shadow-2xl"
                       >
 
                         <button
@@ -1350,9 +1345,9 @@ function Recent() {
                               file
                             )
                           }
-                          className="flex w-full items-center gap-3 px-4 py-3 text-left text-sm text-slate-700 transition hover:bg-slate-50"
+                          className="flex w-full items-center gap-2 sm:gap-3 px-3 sm:px-4 py-2 sm:py-3 text-left text-xs sm:text-sm text-slate-700 transition hover:bg-slate-50"
                         >
-                          <FaEye />
+                          <FaEye className="text-sm sm:text-base" />
                           Open
                         </button>
 
@@ -1364,9 +1359,9 @@ function Recent() {
                               file
                             )
                           }
-                          className="flex w-full items-center gap-3 px-4 py-3 text-left text-sm text-slate-700 transition hover:bg-slate-50"
+                          className="flex w-full items-center gap-2 sm:gap-3 px-3 sm:px-4 py-2 sm:py-3 text-left text-xs sm:text-sm text-slate-700 transition hover:bg-slate-50"
                         >
-                          <FaDownload />
+                          <FaDownload className="text-sm sm:text-base" />
                           Download
                         </button>
 
@@ -1378,9 +1373,9 @@ function Recent() {
                               file
                             )
                           }
-                          className="flex w-full items-center gap-3 px-4 py-3 text-left text-sm text-slate-700 transition hover:bg-slate-50"
+                          className="flex w-full items-center gap-2 sm:gap-3 px-3 sm:px-4 py-2 sm:py-3 text-left text-xs sm:text-sm text-slate-700 transition hover:bg-slate-50"
                         >
-                          <FaEdit />
+                          <FaEdit className="text-sm sm:text-base" />
                           Rename
                         </button>
 
@@ -1392,9 +1387,9 @@ function Recent() {
                               file
                             )
                           }
-                          className="flex w-full items-center gap-3 px-4 py-3 text-left text-sm text-slate-700 transition hover:bg-slate-50"
+                          className="flex w-full items-center gap-2 sm:gap-3 px-3 sm:px-4 py-2 sm:py-3 text-left text-xs sm:text-sm text-slate-700 transition hover:bg-slate-50"
                         >
-                          <FaShareAlt />
+                          <FaShareAlt className="text-sm sm:text-base" />
                           Share
                         </button>
 
@@ -1409,9 +1404,9 @@ function Recent() {
                               file
                             )
                           }
-                          className="flex w-full items-center gap-3 px-4 py-3 text-left text-sm text-red-500 transition hover:bg-red-50"
+                          className="flex w-full items-center gap-2 sm:gap-3 px-3 sm:px-4 py-2 sm:py-3 text-left text-xs sm:text-sm text-red-500 transition hover:bg-red-50"
                         >
-                          <FaTrash />
+                          <FaTrash className="text-sm sm:text-base" />
                           Move to Trash
                         </button>
 
@@ -1433,21 +1428,22 @@ function Recent() {
       </main>
 
 
+      {/* Preview Modal - Responsive */}
       {selectedFile && (
 
-        <div className="fixed inset-0 z-[150] flex items-center justify-center bg-slate-950/80 p-3 sm:p-6">
+        <div className="fixed inset-0 z-[150] flex items-center justify-center bg-slate-950/80 p-2 sm:p-6">
 
-          <div className="relative flex h-[92vh] w-full max-w-6xl flex-col overflow-hidden rounded-2xl bg-white shadow-2xl">
+          <div className="relative flex h-[90vh] sm:h-[92vh] w-full max-w-6xl flex-col overflow-hidden rounded-2xl bg-white shadow-2xl">
 
-            <div className="flex items-center justify-between gap-4 border-b border-slate-200 px-4 py-4 sm:px-5">
+            <div className="flex items-center justify-between gap-2 sm:gap-4 border-b border-slate-200 px-3 sm:px-5 py-3 sm:py-4">
 
               <div className="min-w-0">
 
-                <p className="truncate font-semibold text-slate-800">
+                <p className="truncate text-xs sm:text-sm font-semibold text-slate-800">
                   {selectedFile.original_name}
                 </p>
 
-                <p className="mt-1 text-xs text-slate-500">
+                <p className="mt-0.5 sm:mt-1 text-[10px] sm:text-xs text-slate-500">
                   {formatBytes(
                     selectedFile.size
                   )}
@@ -1461,23 +1457,23 @@ function Recent() {
                 onClick={
                   closePreview
                 }
-                className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl bg-slate-100 text-slate-600 transition hover:bg-red-50 hover:text-red-500"
+                className="flex h-8 w-8 sm:h-10 sm:w-10 flex-shrink-0 items-center justify-center rounded-xl bg-slate-100 text-slate-600 transition hover:bg-red-50 hover:text-red-500"
               >
-                <FaTimes />
+                <FaTimes className="text-sm sm:text-base" />
               </button>
 
             </div>
 
 
-            <div className="flex min-h-0 flex-1 items-center justify-center bg-slate-100">
+            <div className="flex min-h-0 flex-1 items-center justify-center bg-slate-100 p-2 sm:p-4">
 
               {previewLoading && (
 
-                <div className="flex flex-col items-center gap-4">
+                <div className="flex flex-col items-center gap-3 sm:gap-4">
 
-                  <FaCloud className="animate-pulse text-5xl text-blue-600" />
+                  <FaCloud className="animate-pulse text-3xl sm:text-5xl text-blue-600" />
 
-                  <p className="font-medium text-slate-600">
+                  <p className="text-xs sm:text-sm font-medium text-slate-600">
                     Opening file...
                   </p>
 
@@ -1488,11 +1484,11 @@ function Recent() {
 
               {previewError && (
 
-                <div className="p-8 text-center">
+                <div className="p-4 sm:p-8 text-center">
 
-                  <FaFileAlt className="mx-auto mb-4 text-5xl text-slate-300" />
+                  <FaFileAlt className="mx-auto mb-3 sm:mb-4 text-3xl sm:text-5xl text-slate-300" />
 
-                  <p className="font-semibold text-red-500">
+                  <p className="text-sm sm:text-base font-semibold text-red-500">
                     {previewError}
                   </p>
 
@@ -1514,7 +1510,7 @@ function Recent() {
                       alt={
                         selectedFile.original_name
                       }
-                      className="max-h-full max-w-full object-contain"
+                      className="max-h-[60vh] sm:max-h-full max-w-full object-contain"
                     />
 
                   ) : selectedFile.mime_type?.startsWith(
@@ -1525,7 +1521,7 @@ function Recent() {
                       src={previewUrl}
                       controls
                       autoPlay
-                      className="max-h-full max-w-full"
+                      className="max-h-[60vh] sm:max-h-full max-w-full"
                     />
 
                   ) : selectedFile.mime_type?.startsWith(
@@ -1561,33 +1557,34 @@ function Recent() {
       )}
 
 
+      {/* Delete Confirmation Modal - Responsive */}
       {fileToDelete && (
 
-        <div className="fixed inset-0 z-[170] flex items-end justify-center bg-black/40 p-4 sm:items-center">
+        <div className="fixed inset-0 z-[170] flex items-end sm:items-center justify-center bg-black/40 p-3 sm:p-4">
 
-          <div className="w-full max-w-md overflow-hidden rounded-[28px] bg-white shadow-2xl">
+          <div className="w-full max-w-md overflow-hidden rounded-[24px] sm:rounded-[28px] bg-white shadow-2xl">
 
-            <div className="p-6 text-center">
+            <div className="p-4 sm:p-6 text-center">
 
-              <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-red-50">
+              <div className="mx-auto mb-3 sm:mb-4 flex h-12 w-12 sm:h-14 sm:w-14 items-center justify-center rounded-full bg-red-50">
 
-                <FaTrash className="text-xl text-red-500" />
+                <FaTrash className="text-base sm:text-xl text-red-500" />
 
               </div>
 
 
-              <h3 className="text-xl font-bold text-slate-800">
+              <h3 className="text-lg sm:text-xl font-bold text-slate-800">
                 Move to Trash?
               </h3>
 
 
-              <p className="mt-3 break-words text-sm leading-6 text-slate-500">
+              <p className="mt-2 sm:mt-3 break-words text-xs sm:text-sm leading-5 sm:leading-6 text-slate-500">
 
                 Are you sure you want to move
 
                 <br />
 
-                <span className="font-semibold text-slate-700">
+                <span className="font-semibold text-slate-700 text-sm sm:text-base">
                   "{fileToDelete.original_name}"
                 </span>
 
@@ -1606,7 +1603,7 @@ function Recent() {
                 type="button"
                 disabled={deleting}
                 onClick={handleDelete}
-                className="flex w-full items-center justify-center border-b border-slate-200 py-4 font-semibold text-red-500 transition hover:bg-red-50 disabled:opacity-60"
+                className="flex w-full items-center justify-center border-b border-slate-200 py-3 sm:py-4 text-sm sm:text-base font-semibold text-red-500 transition hover:bg-red-50 disabled:opacity-60"
               >
                 {deleting
                   ? "Moving..."
@@ -1620,7 +1617,7 @@ function Recent() {
                 onClick={() =>
                   setFileToDelete(null)
                 }
-                className="w-full py-4 font-semibold text-blue-600 transition hover:bg-slate-50 disabled:opacity-60"
+                className="w-full py-3 sm:py-4 text-sm sm:text-base font-semibold text-blue-600 transition hover:bg-slate-50 disabled:opacity-60"
               >
                 Cancel
               </button>
@@ -1634,26 +1631,27 @@ function Recent() {
       )}
 
 
+      {/* Rename Modal - Responsive */}
       {renamingFile && (
 
-        <div className="fixed inset-0 z-[170] flex items-center justify-center bg-black/40 p-4">
+        <div className="fixed inset-0 z-[170] flex items-center justify-center bg-black/40 p-3 sm:p-4">
 
           <form
             onSubmit={
               handleRename
             }
-            className="w-full max-w-md rounded-3xl bg-white p-6 shadow-2xl"
+            className="w-full max-w-md rounded-2xl sm:rounded-3xl bg-white p-4 sm:p-6 shadow-2xl"
           >
 
-            <div className="mb-5 flex items-center justify-between">
+            <div className="mb-4 sm:mb-5 flex items-center justify-between">
 
               <div>
 
-                <h3 className="text-xl font-bold text-slate-800">
+                <h3 className="text-lg sm:text-xl font-bold text-slate-800">
                   Rename File
                 </h3>
 
-                <p className="mt-1 text-sm text-slate-500">
+                <p className="mt-0.5 sm:mt-1 text-xs sm:text-sm text-slate-500">
                   Enter a new name for your file.
                 </p>
 
@@ -1673,9 +1671,9 @@ function Recent() {
                   );
 
                 }}
-                className="flex h-9 w-9 items-center justify-center rounded-xl bg-slate-100 text-slate-500"
+                className="flex h-8 w-8 sm:h-9 sm:w-9 items-center justify-center rounded-xl bg-slate-100 text-slate-500"
               >
-                <FaTimes />
+                <FaTimes className="text-sm sm:text-base" />
               </button>
 
             </div>
@@ -1692,11 +1690,11 @@ function Recent() {
                   event.target.value
                 )
               }
-              className="w-full rounded-xl border border-slate-200 px-4 py-3 text-sm text-slate-700 outline-none focus:ring-2 focus:ring-blue-200"
+              className="w-full rounded-xl border border-slate-200 px-3 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm text-slate-700 outline-none focus:ring-2 focus:ring-blue-200"
             />
 
 
-            <div className="mt-6 flex justify-end gap-3">
+            <div className="mt-4 sm:mt-6 flex justify-end gap-2 sm:gap-3">
 
               <button
                 type="button"
@@ -1705,7 +1703,7 @@ function Recent() {
                     null
                   )
                 }
-                className="rounded-xl px-5 py-3 text-sm font-semibold text-slate-600 hover:bg-slate-100"
+                className="rounded-xl px-3 sm:px-5 py-2 sm:py-3 text-xs sm:text-sm font-semibold text-slate-600 hover:bg-slate-100"
               >
                 Cancel
               </button>
@@ -1717,7 +1715,7 @@ function Recent() {
                   renaming ||
                   !newFileName.trim()
                 }
-                className="rounded-xl bg-blue-600 px-5 py-3 text-sm font-semibold text-white transition hover:bg-blue-700 disabled:opacity-60"
+                className="rounded-xl bg-blue-600 px-4 sm:px-5 py-2 sm:py-3 text-xs sm:text-sm font-semibold text-white transition hover:bg-blue-700 disabled:opacity-60"
               >
                 {renaming
                   ? "Saving..."
@@ -1733,21 +1731,22 @@ function Recent() {
       )}
 
 
+      {/* Share Modal - Responsive */}
       {sharingFile && (
 
-        <div className="fixed inset-0 z-[170] flex items-center justify-center bg-black/40 p-4">
+        <div className="fixed inset-0 z-[170] flex items-center justify-center bg-black/40 p-3 sm:p-4">
 
-          <div className="flex max-h-[90vh] w-full max-w-2xl flex-col overflow-hidden rounded-3xl bg-white shadow-2xl">
+          <div className="flex max-h-[90vh] w-full max-w-2xl flex-col overflow-hidden rounded-2xl sm:rounded-3xl bg-white shadow-2xl">
 
-            <div className="flex items-center justify-between border-b border-slate-200 px-6 py-5">
+            <div className="flex items-center justify-between border-b border-slate-200 px-4 sm:px-6 py-4 sm:py-5">
 
               <div className="min-w-0">
 
-                <h3 className="truncate text-xl font-bold text-slate-800">
+                <h3 className="truncate text-lg sm:text-xl font-bold text-slate-800">
                   Share File
                 </h3>
 
-                <p className="mt-1 truncate text-sm text-slate-500">
+                <p className="mt-0.5 sm:mt-1 truncate text-xs sm:text-sm text-slate-500">
                   {sharingFile.original_name}
                 </p>
 
@@ -1759,19 +1758,19 @@ function Recent() {
                 onClick={
                   closeShareModal
                 }
-                className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl bg-slate-100 text-slate-500"
+                className="flex h-8 w-8 sm:h-10 sm:w-10 flex-shrink-0 items-center justify-center rounded-xl bg-slate-100 text-slate-500"
               >
-                <FaTimes />
+                <FaTimes className="text-sm sm:text-base" />
               </button>
 
             </div>
 
 
-            <div className="overflow-y-auto p-6">
+            <div className="overflow-y-auto p-4 sm:p-6">
 
               {loadingShareData ? (
 
-                <div className="py-10 text-center text-slate-500">
+                <div className="py-8 sm:py-10 text-center text-xs sm:text-sm text-slate-500">
                   Loading sharing information...
                 </div>
 
@@ -1783,21 +1782,21 @@ function Recent() {
                     onSubmit={
                       handleShareWithUser
                     }
-                    className="rounded-2xl border border-slate-200 p-4"
+                    className="rounded-2xl border border-slate-200 p-3 sm:p-4"
                   >
 
-                    <div className="mb-4 flex items-center gap-2">
+                    <div className="mb-3 sm:mb-4 flex items-center gap-2">
 
-                      <FaUser className="text-blue-600" />
+                      <FaUser className="text-blue-600 text-sm sm:text-base" />
 
-                      <h4 className="font-semibold text-slate-800">
+                      <h4 className="text-xs sm:text-sm font-semibold text-slate-800">
                         Add People
                       </h4>
 
                     </div>
 
 
-                    <div className="flex flex-col gap-3 sm:flex-row">
+                    <div className="flex flex-col gap-2 sm:gap-3 sm:flex-row">
 
                       <input
                         type="email"
@@ -1810,7 +1809,7 @@ function Recent() {
                           )
                         }
                         placeholder="Enter email address"
-                        className="min-w-0 flex-1 rounded-xl border border-slate-200 px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-blue-200"
+                        className="min-w-0 flex-1 rounded-xl border border-slate-200 px-3 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm outline-none focus:ring-2 focus:ring-blue-200"
                       />
 
 
@@ -1823,7 +1822,7 @@ function Recent() {
                             event.target.value
                           )
                         }
-                        className="rounded-xl border border-slate-200 px-4 py-3 text-sm outline-none"
+                        className="rounded-xl border border-slate-200 px-2 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm outline-none"
                       >
                         <option value="viewer">
                           Viewer
@@ -1841,7 +1840,7 @@ function Recent() {
                           sharing ||
                           !shareEmail.trim()
                         }
-                        className="rounded-xl bg-blue-600 px-5 py-3 text-sm font-semibold text-white disabled:opacity-60"
+                        className="rounded-xl bg-blue-600 px-3 sm:px-5 py-2 sm:py-3 text-xs sm:text-sm font-semibold text-white disabled:opacity-60"
                       >
                         {sharing
                           ? "Sharing..."
@@ -1853,30 +1852,30 @@ function Recent() {
                   </form>
 
 
-                  <div className="border-b border-slate-200 py-6">
+                  <div className="border-b border-slate-200 py-4 sm:py-6">
 
-                    <div className="mb-4 flex items-center gap-2">
+                    <div className="mb-3 sm:mb-4 flex items-center gap-2">
 
-                      <FaLink className="text-purple-600" />
+                      <FaLink className="text-purple-600 text-sm sm:text-base" />
 
-                      <h4 className="font-semibold text-slate-800">
+                      <h4 className="text-xs sm:text-sm font-semibold text-slate-800">
                         General Access
                       </h4>
 
                     </div>
 
 
-                    <div className="rounded-2xl border border-slate-200 p-4">
+                    <div className="rounded-2xl border border-slate-200 p-3 sm:p-4">
 
-                      <div className="flex items-center justify-between gap-4">
+                      <div className="flex items-center justify-between gap-2 sm:gap-4">
 
                         <div>
 
-                          <p className="font-medium text-slate-700">
+                          <p className="text-xs sm:text-sm font-medium text-slate-700">
                             Anyone with the link
                           </p>
 
-                          <p className="mt-1 text-xs text-slate-500">
+                          <p className="mt-0.5 sm:mt-1 text-[10px] sm:text-xs text-slate-500">
                             Anyone who has the link can access this file.
                           </p>
 
@@ -1891,7 +1890,7 @@ function Recent() {
                           onClick={
                             handleLinkAccessChange
                           }
-                          className={`relative h-7 w-12 rounded-full transition ${
+                          className={`relative h-6 w-10 sm:h-7 sm:w-12 rounded-full transition ${
                             accessType ===
                             "anyone_with_link"
                               ? "bg-blue-600"
@@ -1900,10 +1899,10 @@ function Recent() {
                         >
 
                           <span
-                            className={`absolute top-1 h-5 w-5 rounded-full bg-white shadow transition ${
+                            className={`absolute top-1 h-4 w-4 sm:h-5 sm:w-5 rounded-full bg-white shadow transition ${
                               accessType ===
                               "anyone_with_link"
-                                ? "left-6"
+                                ? "left-5 sm:left-6"
                                 : "left-1"
                             }`}
                           />
@@ -1917,14 +1916,14 @@ function Recent() {
                         "anyone_with_link" &&
                         shareToken && (
 
-                          <div className="mt-4 flex gap-2">
+                          <div className="mt-3 sm:mt-4 flex flex-col sm:flex-row gap-2">
 
                             <input
                               readOnly
                               value={
                                 getShareLink()
                               }
-                              className="min-w-0 flex-1 rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-xs text-slate-500 outline-none"
+                              className="min-w-0 flex-1 rounded-xl border border-slate-200 bg-slate-50 px-2 sm:px-3 py-1.5 sm:py-2 text-[10px] sm:text-xs text-slate-500 outline-none"
                             />
 
 
@@ -1933,7 +1932,7 @@ function Recent() {
                               onClick={
                                 handleCopyShareLink
                               }
-                              className="rounded-xl bg-blue-600 px-4 py-2 text-xs font-semibold text-white"
+                              className="rounded-xl bg-blue-600 px-3 sm:px-4 py-1.5 sm:py-2 text-[10px] sm:text-xs font-semibold text-white"
                             >
                               Copy
                             </button>
@@ -1947,9 +1946,9 @@ function Recent() {
                   </div>
 
 
-                  <div className="pt-6">
+                  <div className="pt-4 sm:pt-6">
 
-                    <h4 className="mb-4 font-semibold text-slate-800">
+                    <h4 className="mb-3 sm:mb-4 text-xs sm:text-sm font-semibold text-slate-800">
                       People with Access
                     </h4>
 
@@ -1957,13 +1956,13 @@ function Recent() {
                     {sharedUsers.length ===
                     0 ? (
 
-                      <div className="rounded-2xl bg-slate-50 p-5 text-center text-sm text-slate-500">
+                      <div className="rounded-2xl bg-slate-50 p-4 sm:p-5 text-center text-xs sm:text-sm text-slate-500">
                         No additional users have access yet.
                       </div>
 
                     ) : (
 
-                      <div className="space-y-3">
+                      <div className="space-y-2 sm:space-y-3">
 
                         {sharedUsers.map(
                           (user) => (
@@ -1972,12 +1971,12 @@ function Recent() {
                               key={
                                 user.id
                               }
-                              className="flex items-center justify-between gap-4 rounded-2xl border border-slate-200 p-4"
+                              className="flex items-center justify-between gap-2 sm:gap-4 rounded-2xl border border-slate-200 p-3 sm:p-4"
                             >
 
                               <div className="min-w-0">
 
-                                <p className="truncate font-semibold text-slate-700">
+                                <p className="truncate text-xs sm:text-sm font-semibold text-slate-700">
 
                                   {user.full_name ||
                                     user.name ||
@@ -1986,7 +1985,7 @@ function Recent() {
                                 </p>
 
 
-                                <p className="truncate text-xs text-slate-500">
+                                <p className="truncate text-[10px] sm:text-xs text-slate-500">
 
                                   {user.email}
 
@@ -2009,7 +2008,7 @@ function Recent() {
                                     user.id
                                   )
                                 }
-                                className="flex-shrink-0 rounded-xl px-3 py-2 text-sm font-semibold text-red-500 transition hover:bg-red-50 disabled:opacity-60"
+                                className="flex-shrink-0 rounded-xl px-2 sm:px-3 py-1.5 sm:py-2 text-[10px] sm:text-sm font-semibold text-red-500 transition hover:bg-red-50 disabled:opacity-60"
                               >
                                 {removingUserId ===
                                 user.id
