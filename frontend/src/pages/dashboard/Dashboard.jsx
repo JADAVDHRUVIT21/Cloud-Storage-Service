@@ -127,6 +127,9 @@ function Dashboard() {
   const [folderDownloadProgress, setFolderDownloadProgress] = useState(0);
   const [sharingFolder, setSharingFolder] = useState(null);
 
+  // ========== FOLDER CREATION LOADING STATE ==========
+  const [isCreatingFolder, setIsCreatingFolder] = useState(false);
+
   // ========== LOGOUT CONFIRMATION STATE ==========
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
 
@@ -365,14 +368,22 @@ function Dashboard() {
     }
   };
 
+  // ========== UPDATED CREATE FOLDER WITH LOADING STATE ==========
   const handleCreateFolder = async (event) => {
     event.preventDefault();
 
     if (!folderName.trim()) {
+      setError("Please enter a folder name.");
+      return;
+    }
+
+    // Prevent multiple clicks
+    if (isCreatingFolder) {
       return;
     }
 
     try {
+      setIsCreatingFolder(true);
       setError("");
       setSuccess("");
 
@@ -393,6 +404,8 @@ function Dashboard() {
         err.response?.data?.detail ||
         "Unable to create folder."
       );
+    } finally {
+      setIsCreatingFolder(false);
     }
   };
 
@@ -1193,6 +1206,30 @@ function Dashboard() {
     </div>
   );
 
+  // ========== FOLDER CREATING LOADING INDICATOR ==========
+  const FolderCreatingIndicator = () => (
+    <div className="fixed bottom-6 right-6 z-[300] overflow-hidden rounded-[20px] border border-slate-200 bg-white shadow-2xl max-w-[280px] sm:max-w-[380px]">
+      <div className="p-4 sm:p-5">
+        <div className="flex items-center gap-3 sm:gap-4">
+          <div className="flex h-10 w-10 sm:h-12 sm:w-12 flex-shrink-0 items-center justify-center rounded-2xl bg-blue-100 text-blue-600">
+            <FaSpinner className="text-base sm:text-xl animate-spin" />
+          </div>
+          <div className="min-w-0">
+            <p className="text-xs sm:text-sm font-bold text-slate-800">
+              Creating Folder
+            </p>
+            <p className="text-[10px] sm:text-xs text-slate-500">
+              Please wait...
+            </p>
+          </div>
+        </div>
+        <div className="mt-3 sm:mt-4 h-1.5 w-full overflow-hidden rounded-full bg-slate-100">
+          <div className="h-full w-full rounded-full bg-gradient-to-r from-blue-400 to-blue-600 animate-[loading_1.5s_ease-in-out_infinite]"></div>
+        </div>
+      </div>
+    </div>
+  );
+
   if (loading) {
     return <LoadingOverlay />;
   }
@@ -1222,6 +1259,9 @@ function Dashboard() {
           <div className="break-words">{error}</div>
         </div>
       )}
+
+      {/* ========== FOLDER CREATING INDICATOR ========== */}
+      {isCreatingFolder && <FolderCreatingIndicator />}
 
       {/* Upload Progress Modal */}
       {isUploading && uploadingFile && (
@@ -1475,7 +1515,8 @@ function Dashboard() {
                 <button
                   type="button"
                   onClick={() => setShowCreateFolder(true)}
-                  className="flex items-center justify-center gap-1.5 sm:gap-2 rounded-xl border border-slate-200 bg-white px-3 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
+                  disabled={isCreatingFolder}
+                  className="flex items-center justify-center gap-1.5 sm:gap-2 rounded-xl border border-slate-200 bg-white px-3 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm font-semibold text-slate-700 transition hover:bg-slate-50 disabled:opacity-60"
                 >
                   <FaPlus className="text-xs sm:text-sm" />
                   <span className="hidden xs:inline">New Folder</span>
@@ -1597,7 +1638,8 @@ function Dashboard() {
                 <button
                   type="button"
                   onClick={() => setShowCreateFolder(true)}
-                  className="text-xs sm:text-sm font-semibold text-blue-600 hover:text-blue-700"
+                  disabled={isCreatingFolder}
+                  className="text-xs sm:text-sm font-semibold text-blue-600 hover:text-blue-700 disabled:opacity-60"
                 >
                   + New Folder
                 </button>
@@ -1615,7 +1657,8 @@ function Dashboard() {
                   <button
                     type="button"
                     onClick={() => setShowCreateFolder(true)}
-                    className="mt-3 sm:mt-5 rounded-xl bg-blue-600 px-4 sm:px-5 py-2 sm:py-3 text-xs sm:text-sm font-semibold text-white transition hover:bg-blue-700"
+                    disabled={isCreatingFolder}
+                    className="mt-3 sm:mt-5 rounded-xl bg-blue-600 px-4 sm:px-5 py-2 sm:py-3 text-xs sm:text-sm font-semibold text-white transition hover:bg-blue-700 disabled:opacity-60"
                   >
                     Create Folder
                   </button>
@@ -1887,8 +1930,7 @@ function Dashboard() {
       {/* Bottom Navigation for Mobile */}
       <div className="fixed bottom-0 left-0 right-0 z-40 border-t border-slate-200 bg-white/95 px-1 pb-[env(safe-area-inset-bottom)] backdrop-blur md:hidden">
         <div className="grid h-[60px] sm:h-[70px] grid-cols-5 items-center">
-          <button
-            type="button"
+          <button            type="button"
             onClick={() => handleSidebarClick("drive")}
             className={`flex flex-col items-center justify-center gap-0.5 sm:gap-1 text-[8px] sm:text-[10px] font-medium ${activeMenu === "drive" ? "text-blue-600" : "text-slate-400"
               }`}
@@ -1941,8 +1983,7 @@ function Dashboard() {
         </div>
       </div>
 
-      {/* All Modals - Responsive */}
-      {/* Create Folder Modal */}
+      {/* Create Folder Modal - Updated with loading state */}
       {showCreateFolder && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 px-4">
           <div className="w-full max-w-xs sm:max-w-md rounded-2xl bg-white p-5 sm:p-6 shadow-2xl">
@@ -1950,7 +1991,18 @@ function Dashboard() {
               <h3 className="text-base sm:text-lg font-bold text-slate-800">
                 Create New Folder
               </h3>
-              <button type="button" onClick={() => setShowCreateFolder(false)}>
+              <button 
+                type="button" 
+                onClick={() => {
+                  if (!isCreatingFolder) {
+                    setShowCreateFolder(false);
+                    setFolderName("");
+                    setError("");
+                  }
+                }}
+                disabled={isCreatingFolder}
+                className="disabled:opacity-50"
+              >
                 <FaTimes className="text-sm sm:text-base" />
               </button>
             </div>
@@ -1961,21 +2013,37 @@ function Dashboard() {
                 onChange={(event) => setFolderName(event.target.value)}
                 placeholder="Folder name"
                 autoFocus
-                className="w-full rounded-xl border border-slate-200 px-3 sm:px-4 py-2.5 sm:py-3 text-sm outline-none focus:border-blue-500"
+                disabled={isCreatingFolder}
+                className="w-full rounded-xl border border-slate-200 px-3 sm:px-4 py-2.5 sm:py-3 text-sm outline-none focus:border-blue-500 disabled:bg-slate-100 disabled:cursor-not-allowed"
               />
               <div className="mt-4 sm:mt-5 flex justify-end gap-2 sm:gap-3">
                 <button
                   type="button"
-                  onClick={() => setShowCreateFolder(false)}
-                  className="rounded-xl px-3 sm:px-4 py-1.5 sm:py-2.5 text-xs sm:text-sm font-semibold text-slate-600"
+                  onClick={() => {
+                    if (!isCreatingFolder) {
+                      setShowCreateFolder(false);
+                      setFolderName("");
+                      setError("");
+                    }
+                  }}
+                  disabled={isCreatingFolder}
+                  className="rounded-xl px-3 sm:px-4 py-1.5 sm:py-2.5 text-xs sm:text-sm font-semibold text-slate-600 hover:bg-slate-100 disabled:opacity-50"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="rounded-xl bg-blue-600 px-4 sm:px-5 py-1.5 sm:py-2.5 text-xs sm:text-sm font-semibold text-white"
+                  disabled={isCreatingFolder || !folderName.trim()}
+                  className="rounded-xl bg-blue-600 px-4 sm:px-5 py-1.5 sm:py-2.5 text-xs sm:text-sm font-semibold text-white hover:bg-blue-700 disabled:opacity-60 flex items-center gap-2"
                 >
-                  Create Folder
+                  {isCreatingFolder ? (
+                    <>
+                      <FaSpinner className="animate-spin text-sm" />
+                      Creating...
+                    </>
+                  ) : (
+                    "Create Folder"
+                  )}
                 </button>
               </div>
             </form>
