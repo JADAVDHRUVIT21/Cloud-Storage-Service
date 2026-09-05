@@ -24,7 +24,6 @@ import {
   FaPlus,
   FaSearch,
   FaShareAlt,
-  FaStar,
   FaTimes,
   FaTrash,
   FaUser,
@@ -32,6 +31,10 @@ import {
   FaVideo,
   FaClock,
   FaHome,
+  FaSpinner,
+  FaUserCircle,
+  FaLock,
+  FaEnvelope,
 } from "react-icons/fa";
 
 import api from "../../services/api";
@@ -39,7 +42,7 @@ import { useAuth } from "../../context/AuthContext";
 
 function Dashboard() {
   const navigate = useNavigate();
-  const { user, logout } = useAuth();
+  const { user, logout, updateUser } = useAuth();
 
   const fileInputRef = useRef(null);
 
@@ -107,6 +110,11 @@ function Dashboard() {
 
   const [removingUserId, setRemovingUserId] = useState(null);
 
+  // ========== UPLOAD PROGRESS STATES ==========
+  const [uploadProgress, setUploadProgress] = useState(0);
+  const [uploadingFile, setUploadingFile] = useState(null);
+  const [isUploading, setIsUploading] = useState(false);
+
   // ========== FOLDER STATES ==========
   const [openFolderMenuId, setOpenFolderMenuId] = useState(null);
   const [folderToDelete, setFolderToDelete] = useState(null);
@@ -117,6 +125,25 @@ function Dashboard() {
   const [downloadingFolder, setDownloadingFolder] = useState(null);
   const [folderDownloadProgress, setFolderDownloadProgress] = useState(0);
   const [sharingFolder, setSharingFolder] = useState(null);
+
+  // ========== LOGOUT CONFIRMATION STATE ==========
+  const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
+
+  // ========== DOWNLOAD ABORT CONTROLLER ==========
+  const [downloadAbortController, setDownloadAbortController] = useState(null);
+
+  // ========== PROFILE STATES ==========
+  const [showProfile, setShowProfile] = useState(false);
+  const [profileLoading, setProfileLoading] = useState(false);
+  const [profileError, setProfileError] = useState("");
+  const [profileSuccess, setProfileSuccess] = useState("");
+  const [editName, setEditName] = useState(false);
+  const [newFullName, setNewFullName] = useState("");
+  const [editPassword, setEditPassword] = useState(false);
+  const [currentPassword, setCurrentPassword] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
 
   const firstName = user?.full_name
     ? user.full_name.split(" ")[0]
@@ -137,8 +164,7 @@ function Dashboard() {
       setFolders(foldersResponse.data || []);
       setStats(statsResponse.data || null);
     } catch (err) {
-      console.error(err);
-
+      console.error("Dashboard data error:", err);
       setError(
         err.response?.data?.detail ||
         "Unable to load dashboard data."
@@ -269,33 +295,77 @@ function Dashboard() {
       return;
     }
 
+    // Check file size (max 100MB)
+    if (selected.size > 100 * 1024 * 1024) {
+      setError("File size exceeds 100MB limit.");
+      event.target.value = "";
+      return;
+    }
+
     try {
-      setUploading(true);
+      setIsUploading(true);
+      setUploadProgress(0);
+      setUploadingFile(selected);
       setError("");
       setSuccess("");
 
       const formData = new FormData();
-
       formData.append("file", selected);
 
-      await api.post("/files/upload", formData, {
+      console.log("Uploading file:", {
+        name: selected.name,
+        size: selected.size,
+        type: selected.type
+      });
+
+      const response = await api.post("/files/upload", formData, {
         headers: {
           "Content-Type": "multipart/form-data",
         },
+        onUploadProgress: (progressEvent) => {
+          if (progressEvent.total) {
+            const percentage = Math.round(
+              (progressEvent.loaded / progressEvent.total) * 100
+            );
+            setUploadProgress(percentage);
+          }
+        },
       });
 
-      setSuccess("File uploaded successfully.");
+      setUploadProgress(100);
 
-      await loadDashboardData();
+      // Check if upload was successful
+      if (response.status === 200 || response.status === 201) {
+        setSuccess("File uploaded successfully.");
+        await loadDashboardData();
+      } else {
+        throw new Error("Upload failed with status: " + response.status);
+      }
+
+      setTimeout(() => {
+        setUploadProgress(0);
+        setUploadingFile(null);
+        setIsUploading(false);
+      }, 1500);
     } catch (err) {
-      console.error(err);
-
-      setError(
-        err.response?.data?.detail ||
-        "File upload failed."
-      );
+      console.error("Upload error:", err);
+      console.error("Server response:", err.response?.data);
+      
+      // Extract detailed error message
+      let errorMessage = "File upload failed.";
+      if (err.response?.data?.detail) {
+        errorMessage = err.response.data.detail;
+      } else if (err.response?.data?.message) {
+        errorMessage = err.response.data.message;
+      } else if (err.message) {
+        errorMessage = err.message;
+      }
+      
+      setError(errorMessage);
+      setUploadProgress(0);
+      setUploadingFile(null);
+      setIsUploading(false);
     } finally {
-      setUploading(false);
       event.target.value = "";
     }
   };
@@ -323,6 +393,7 @@ function Dashboard() {
 
       await loadDashboardData();
     } catch (err) {
+      console.error("Create folder error:", err);
       setError(
         err.response?.data?.detail ||
         "Unable to create folder."
@@ -350,8 +421,7 @@ function Dashboard() {
 
       setPreviewUrl(url);
     } catch (err) {
-      console.error(err);
-
+      console.error("Preview error:", err);
       setPreviewError(
         err.response?.data?.detail ||
         "Unable to open this file."
@@ -371,22 +441,38 @@ function Dashboard() {
     setPreviewError("");
   };
 
+  const cancelDownload = () => {
+    if (downloadAbortController) {
+      downloadAbortController.abort();
+      setDownloadAbortController(null);
+    }
+    setDownloadFile(null);
+    setDownloadProgress(0);
+    setError("Download cancelled.");
+  };
+
   const handleDownload = async (file) => {
     try {
+      // Create abort controller
+      const controller = new AbortController();
+      setDownloadAbortController(controller);
+
       setDownloadFile(file);
       setDownloadProgress(0);
       setError("");
 
       const response = await api.get(`/files/${file.id}/download`, {
         responseType: "blob",
-
+        signal: controller.signal,
         onDownloadProgress: (progressEvent) => {
           if (progressEvent.total) {
             const percentage = Math.round(
               (progressEvent.loaded / progressEvent.total) * 100
             );
-
             setDownloadProgress(percentage);
+          } else {
+            // For files where total size is unknown, show a spinning indicator
+            setDownloadProgress(0);
           }
         },
       });
@@ -394,17 +480,11 @@ function Dashboard() {
       const url = window.URL.createObjectURL(new Blob([response.data]));
 
       const link = document.createElement("a");
-
       link.href = url;
-
       link.setAttribute("download", file.original_name);
-
       document.body.appendChild(link);
-
       link.click();
-
       link.remove();
-
       window.URL.revokeObjectURL(url);
 
       setDownloadProgress(100);
@@ -412,14 +492,23 @@ function Dashboard() {
       setTimeout(() => {
         setDownloadFile(null);
         setDownloadProgress(0);
+        setDownloadAbortController(null);
+        setSuccess("File downloaded successfully.");
       }, 800);
     } catch (err) {
-      console.error(err);
-
-      setDownloadFile(null);
-      setDownloadProgress(0);
-
-      setError("Unable to download file.");
+      if (err.name === "AbortError" || err.code === "ERR_CANCELED") {
+        console.log("Download cancelled by user");
+        setDownloadFile(null);
+        setDownloadProgress(0);
+        setDownloadAbortController(null);
+        setError("Download cancelled.");
+      } else {
+        console.error("Download error:", err);
+        setDownloadFile(null);
+        setDownloadProgress(0);
+        setDownloadAbortController(null);
+        setError("Unable to download file.");
+      }
     }
   };
 
@@ -444,6 +533,7 @@ function Dashboard() {
 
       await loadDashboardData();
     } catch (err) {
+      console.error("Delete error:", err);
       setError(
         err.response?.data?.detail ||
         "Unable to delete file."
@@ -482,6 +572,7 @@ function Dashboard() {
 
       await loadDashboardData();
     } catch (err) {
+      console.error("Rename error:", err);
       setError(
         err.response?.data?.detail ||
         "Unable to rename file."
@@ -509,13 +600,10 @@ function Dashboard() {
       const data = response.data || {};
 
       setSharedUsers(data.shared_users || []);
-
       setAccessType(data.access_type || "restricted");
-
       setShareToken(data.share_token || data.token || null);
     } catch (err) {
-      console.error(err);
-
+      console.error("Share data error:", err);
       setError(
         err.response?.data?.detail ||
         "Unable to load sharing information."
@@ -561,9 +649,7 @@ function Dashboard() {
 
         if (existingIndex >= 0) {
           const updated = [...previous];
-
           updated[existingIndex] = response.data;
-
           return updated;
         }
 
@@ -571,11 +657,9 @@ function Dashboard() {
       });
 
       setShareEmail("");
-
       setSuccess("File shared successfully.");
     } catch (err) {
-      console.error(err);
-
+      console.error("Share error:", err);
       setError(
         err.response?.data?.detail ||
         "Unable to share file."
@@ -602,8 +686,7 @@ function Dashboard() {
 
       setSuccess("User access removed.");
     } catch (err) {
-      console.error(err);
-
+      console.error("Remove user error:", err);
       setError(
         err.response?.data?.detail ||
         "Unable to remove user."
@@ -619,7 +702,6 @@ function Dashboard() {
     }
 
     const previousAccessType = accessType;
-
     const previousToken = shareToken;
 
     try {
@@ -635,7 +717,6 @@ function Dashboard() {
       const data = response.data || {};
 
       setAccessType(data.access_type || newAccessType);
-
       setShareToken(data.token || data.share_token || previousToken || null);
 
       setSuccess(
@@ -644,12 +725,9 @@ function Dashboard() {
           : "Link access restricted."
       );
     } catch (err) {
-      console.error(err);
-
+      console.error("Link access error:", err);
       setAccessType(previousAccessType);
-
       setShareToken(previousToken);
-
       setError(
         err.response?.data?.detail ||
         "Unable to update link access."
@@ -672,27 +750,19 @@ function Dashboard() {
 
     if (!link) {
       setError("Share link is not available yet.");
-
       return;
     }
 
     try {
       await navigator.clipboard.writeText(link);
-
       setSuccess("Share link copied to clipboard.");
     } catch (err) {
       const textArea = document.createElement("textarea");
-
       textArea.value = link;
-
       document.body.appendChild(textArea);
-
       textArea.select();
-
       document.execCommand("copy");
-
       textArea.remove();
-
       setSuccess("Share link copied to clipboard.");
     }
   };
@@ -729,8 +799,7 @@ function Dashboard() {
 
       await loadDashboardData();
     } catch (err) {
-      console.error(err);
-
+      console.error("Folder rename error:", err);
       setError(
         err.response?.data?.detail ||
         "Unable to rename folder."
@@ -763,8 +832,7 @@ function Dashboard() {
 
       await loadDashboardData();
     } catch (err) {
-      console.error(err);
-
+      console.error("Folder delete error:", err);
       setError(
         err.response?.data?.detail ||
         "Unable to delete folder."
@@ -782,13 +850,11 @@ function Dashboard() {
 
       const response = await api.get(`/folders/${folder.id}/download`, {
         responseType: "blob",
-
         onDownloadProgress: (progressEvent) => {
           if (progressEvent.total) {
             const percentage = Math.round(
               (progressEvent.loaded / progressEvent.total) * 100
             );
-
             setFolderDownloadProgress(percentage);
           }
         },
@@ -797,35 +863,25 @@ function Dashboard() {
       const url = window.URL.createObjectURL(new Blob([response.data]));
 
       const link = document.createElement("a");
-
       link.href = url;
-
       link.setAttribute("download", `${folder.name}.zip`);
-
       document.body.appendChild(link);
-
       link.click();
-
       link.remove();
-
       window.URL.revokeObjectURL(url);
 
       setFolderDownloadProgress(100);
 
       setTimeout(() => {
         setDownloadingFolder(null);
-
         setFolderDownloadProgress(0);
       }, 800);
 
       setSuccess("Folder downloaded successfully.");
     } catch (err) {
-      console.error(err);
-
+      console.error("Folder download error:", err);
       setDownloadingFolder(null);
-
       setFolderDownloadProgress(0);
-
       setError(
         err.response?.data?.detail ||
         "Unable to download folder."
@@ -853,13 +909,10 @@ function Dashboard() {
       const data = response.data || {};
 
       setSharedUsers(data.shared_users || []);
-
       setAccessType(data.access_type || "restricted");
-
       setShareToken(data.share_token || data.token || null);
     } catch (err) {
-      console.error(err);
-
+      console.error("Folder share data error:", err);
       setError(
         err.response?.data?.detail ||
         "Unable to load folder sharing information."
@@ -869,9 +922,130 @@ function Dashboard() {
     }
   };
 
-  const handleLogout = () => {
-    logout();
+  // ========== PROFILE FUNCTIONS ==========
 
+  const openProfile = () => {
+    setShowProfile(true);
+    setNewFullName(user?.full_name || "");
+    setProfileError("");
+    setProfileSuccess("");
+    setEditName(false);
+    setEditPassword(false);
+    setCurrentPassword("");
+    setNewPassword("");
+    setConfirmPassword("");
+  };
+
+  const closeProfile = () => {
+    setShowProfile(false);
+    setEditName(false);
+    setEditPassword(false);
+    setProfileError("");
+    setProfileSuccess("");
+    setCurrentPassword("");
+    setNewPassword("");
+    setConfirmPassword("");
+  };
+
+  const handleUpdateName = async (event) => {
+    event.preventDefault();
+
+    if (!newFullName.trim()) {
+      setProfileError("Name cannot be empty.");
+      return;
+    }
+
+    try {
+      setProfileLoading(true);
+      setProfileError("");
+      setProfileSuccess("");
+
+      // FastAPI endpoint: PUT /api/v1/me
+      const response = await api.put("/me", {
+        full_name: newFullName.trim(),
+      });
+
+      // Update the user using the updateUser function from AuthContext
+      if (response.data) {
+        updateUser({ full_name: response.data.full_name || newFullName.trim() });
+      }
+
+      setProfileSuccess("Name updated successfully.");
+      setEditName(false);
+      
+      // Reload dashboard to refresh user data
+      await loadDashboardData();
+    } catch (err) {
+      console.error("Update name error:", err);
+      console.error("Error details:", err.response?.data);
+      
+      setProfileError(
+        err.response?.data?.detail ||
+        err.response?.data?.message ||
+        "Unable to update name. Please try again."
+      );
+    } finally {
+      setProfileLoading(false);
+    }
+  };
+
+  const handleUpdatePassword = async (event) => {
+    event.preventDefault();
+
+    if (!currentPassword.trim() || !newPassword.trim() || !confirmPassword.trim()) {
+      setProfileError("Please fill in all password fields.");
+      return;
+    }
+
+    if (newPassword.length < 8) {
+      setProfileError("New password must be at least 8 characters.");
+      return;
+    }
+
+    if (newPassword !== confirmPassword) {
+      setProfileError("New passwords do not match.");
+      return;
+    }
+
+    try {
+      setProfileLoading(true);
+      setProfileError("");
+      setProfileSuccess("");
+
+      // FastAPI endpoint: PUT /api/v1/me/password
+      await api.put("/me/password", {
+        current_password: currentPassword,
+        new_password: newPassword,
+      });
+
+      setProfileSuccess("Password updated successfully.");
+      setEditPassword(false);
+      setCurrentPassword("");
+      setNewPassword("");
+      setConfirmPassword("");
+    } catch (err) {
+      console.error("Update password error:", err);
+      console.error("Error details:", err.response?.data);
+      
+      setProfileError(
+        err.response?.data?.detail ||
+        err.response?.data?.message ||
+        "Unable to update password. Please check your current password."
+      );
+    } finally {
+      setProfileLoading(false);
+    }
+  };
+
+  const handleLogout = async () => {
+    try {
+      // Call logout API if needed
+      await api.post("/auth/logout");
+    } catch (err) {
+      console.error("Logout error:", err);
+    }
+    setShowLogoutConfirm(false);
+    logout();
     navigate("/login");
   };
 
@@ -880,10 +1054,6 @@ function Dashboard() {
 
     if (menu === "recent") {
       navigate("/files");
-    }
-
-    if (menu === "starred") {
-      navigate("/starred");
     }
 
     if (menu === "trash") {
@@ -924,6 +1094,79 @@ function Dashboard() {
       {error && (
         <div className="fixed right-4 top-4 z-[100] max-w-sm rounded-xl bg-red-500 px-5 py-3 text-sm font-medium text-white shadow-xl">
           <div className="break-words">{error}</div>
+        </div>
+      )}
+
+      {/* ========== UPLOAD PROGRESS MODAL (iOS/macOS style) ========== */}
+      {isUploading && uploadingFile && (
+        <div className="fixed inset-0 z-[110] flex items-center justify-center bg-black/50 px-4 backdrop-blur-sm">
+          <div className="w-full max-w-sm overflow-hidden rounded-3xl bg-white/95 shadow-2xl backdrop-blur-lg">
+            <div className="px-6 pb-6 pt-8">
+              <div className="flex flex-col items-center text-center">
+                <div className="relative mb-4">
+                  <div className="flex h-16 w-16 items-center justify-center rounded-full bg-blue-100">
+                    <FaCloudUploadAlt className="text-3xl text-blue-600" />
+                  </div>
+                  {uploadProgress === 100 && (
+                    <div className="absolute -right-2 -top-2 flex h-7 w-7 items-center justify-center rounded-full bg-green-500 text-white text-xs font-bold">
+                      ✓
+                    </div>
+                  )}
+                </div>
+
+                <h3 className="text-lg font-bold text-slate-800">
+                  {uploadProgress === 100 ? "Upload Complete" : "Uploading File"}
+                </h3>
+
+                <p className="mt-1 text-sm text-slate-500">
+                  {uploadProgress === 100
+                    ? "Your file has been uploaded successfully"
+                    : uploadingFile.name}
+                </p>
+
+                <div className="mt-4 w-full">
+                  <div className="mb-2 flex items-center justify-between">
+                    <span className="text-xs font-medium text-slate-500">
+                      {formatBytes(uploadingFile.size)}
+                    </span>
+                    <span className="text-sm font-bold text-blue-600">
+                      {uploadProgress}%
+                    </span>
+                  </div>
+
+                  <div className="h-2 overflow-hidden rounded-full bg-slate-200">
+                    <div
+                      className="h-full rounded-full bg-blue-600 transition-all duration-300"
+                      style={{
+                        width: `${uploadProgress}%`,
+                        background:
+                          uploadProgress === 100
+                            ? "linear-gradient(to right, #22c55e, #16a34a)"
+                            : "linear-gradient(to right, #3b82f6, #2563eb)",
+                      }}
+                    />
+                  </div>
+                </div>
+
+                {uploadProgress < 100 && (
+                  <div className="mt-5 w-full">
+                    <div className="flex justify-between text-xs text-slate-400">
+                      <span>Uploading...</span>
+                      <span className="animate-pulse">⏳</span>
+                    </div>
+                  </div>
+                )}
+
+                {uploadProgress === 100 && (
+                  <div className="mt-5 w-full">
+                    <div className="flex justify-center text-xs text-green-600 font-medium">
+                      ✓ Done
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
         </div>
       )}
 
@@ -989,33 +1232,7 @@ function Dashboard() {
                 }`}
             >
               <FaFolder />
-              All Folders
-            </button>
-
-            <button
-              type="button"
-              onClick={() => handleSidebarClick("recent")}
-              className={`flex w-full items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium transition ${activeMenu === "recent"
-                  ? "bg-blue-50 text-blue-600"
-                  : "text-slate-600 hover:bg-slate-100"
-                }`}
-            >
-              <FaFolder />
               All Files
-            </button>
-
-            
-
-            <button
-              type="button"
-              onClick={() => handleSidebarClick("starred")}
-              className={`flex w-full items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium transition ${activeMenu === "starred"
-                ? "bg-blue-50 text-blue-600"
-                : "text-slate-600 hover:bg-slate-100"
-                }`}
-            >
-              <FaStar />
-              Starred
             </button>
 
             <button
@@ -1072,15 +1289,19 @@ function Dashboard() {
 
             <div className="flex items-center justify-between rounded-xl px-2 py-2">
 
-              <div className="flex min-w-0 items-center gap-3">
+              <button
+                type="button"
+                onClick={openProfile}
+                className="flex min-w-0 flex-1 items-center gap-3"
+              >
 
                 <div className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full bg-blue-100 font-bold text-blue-600">
                   {firstName.charAt(0).toUpperCase()}
                 </div>
 
-                <div className="min-w-0">
+                <div className="min-w-0 text-left">
 
-                  <p className="truncate text-xs font-semibold text-slate-700">
+                  <p className="truncate text-xs font-semibold text-slate-700 hover:text-blue-600 transition-colors">
                     {user?.full_name || "User"}
                   </p>
 
@@ -1090,12 +1311,12 @@ function Dashboard() {
 
                 </div>
 
-              </div>
+              </button>
 
               <button
                 type="button"
-                onClick={handleLogout}
-                className="text-xs font-medium text-red-500 hover:text-red-600"
+                onClick={() => setShowLogoutConfirm(true)}
+                className="text-xs font-medium text-red-500 hover:text-red-600 flex-shrink-0 ml-2"
               >
                 Logout
               </button>
@@ -1146,9 +1367,10 @@ function Dashboard() {
 
             <button
               type="button"
+              onClick={openProfile}
               className="ml-3 flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl border border-slate-200 text-slate-600 transition hover:bg-slate-100"
             >
-              <FaBell />
+              <FaUser />
             </button>
 
           </header>
@@ -1756,18 +1978,6 @@ function Dashboard() {
 
           <button
             type="button"
-            onClick={() => handleSidebarClick("starred")}
-            className={`flex flex-col items-center justify-center gap-1 text-[10px] font-medium ${activeMenu === "starred"
-              ? "text-blue-600"
-              : "text-slate-400"
-              }`}
-          >
-            <FaStar className="text-lg" />
-            Starred
-          </button>
-
-          <button
-            type="button"
             onClick={() => handleSidebarClick("trash")}
             className={`flex flex-col items-center justify-center gap-1 text-[10px] font-medium ${activeMenu === "trash"
               ? "text-blue-600"
@@ -1776,6 +1986,15 @@ function Dashboard() {
           >
             <FaTrash className="text-lg" />
             Trash
+          </button>
+
+          <button
+            type="button"
+            onClick={openProfile}
+            className={`flex flex-col items-center justify-center gap-1 text-[10px] font-medium text-slate-400`}
+          >
+            <FaUserCircle className="text-lg" />
+            Account
           </button>
 
         </div>
@@ -1947,60 +2166,107 @@ function Dashboard() {
 
       )}
 
-      {/* File Download Progress Modal */}
+      {/* File Download Progress Modal with Cancel Button */}
       {downloadFile && (
+        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/30 px-4 backdrop-blur-sm">
+          <div className="w-full max-w-sm overflow-hidden rounded-3xl bg-white shadow-2xl">
+            <div className="px-6 pb-6 pt-8">
+              <div className="flex flex-col items-center text-center">
+                <div className="relative mb-4">
+                  <div className="flex h-16 w-16 items-center justify-center rounded-full bg-blue-100">
+                    {downloadProgress === 100 ? (
+                      <FaDownload className="text-3xl text-green-600" />
+                    ) : downloadProgress === 0 && !downloadFile.size ? (
+                      <FaSpinner className="text-3xl text-blue-600 animate-spin" />
+                    ) : (
+                      <FaDownload className="text-3xl text-blue-600" />
+                    )}
+                  </div>
+                  {downloadProgress === 100 && (
+                    <div className="absolute -right-2 -top-2 flex h-7 w-7 items-center justify-center rounded-full bg-green-500 text-white text-xs font-bold">
+                      ✓
+                    </div>
+                  )}
+                </div>
 
-        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/30 px-4">
-
-          <div className="w-full max-w-sm rounded-3xl bg-white p-6 shadow-2xl">
-
-            <div className="mb-5 flex items-center gap-4">
-
-              <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-blue-100 text-blue-600">
-                <FaDownload />
-              </div>
-
-              <div className="min-w-0">
-
-                <h3 className="truncate font-semibold text-slate-800">
-                  Downloading
+                <h3 className="text-lg font-bold text-slate-800">
+                  {downloadProgress === 100 ? "Download Complete" : "Downloading File"}
                 </h3>
 
-                <p className="truncate text-xs text-slate-500">
-                  {downloadFile.original_name}
+                <p className="mt-1 text-sm text-slate-500">
+                  {downloadProgress === 100
+                    ? "Your file has been downloaded successfully"
+                    : downloadFile.original_name}
                 </p>
 
+                <div className="mt-4 w-full">
+                  <div className="mb-2 flex items-center justify-between">
+                    <span className="text-xs font-medium text-slate-500">
+                      {downloadFile.size ? formatBytes(downloadFile.size) : "Preparing..."}
+                    </span>
+                    <span className="text-sm font-bold text-blue-600">
+                      {downloadProgress}%
+                    </span>
+                  </div>
+
+                  <div className="h-2 overflow-hidden rounded-full bg-slate-200">
+                    <div
+                      className="h-full rounded-full transition-all duration-300"
+                      style={{
+                        width: `${downloadProgress}%`,
+                        background:
+                          downloadProgress === 100
+                            ? "linear-gradient(to right, #22c55e, #16a34a)"
+                            : "linear-gradient(to right, #3b82f6, #2563eb)",
+                      }}
+                    />
+                  </div>
+                </div>
+
+                {downloadProgress < 100 && (
+                  <div className="mt-5 w-full">
+                    <div className="flex justify-between text-xs text-slate-400">
+                      <span>Downloading...</span>
+                      <span className="animate-pulse">⏳</span>
+                    </div>
+                  </div>
+                )}
+
+                {downloadProgress === 100 && (
+                  <div className="mt-5 w-full">
+                    <div className="flex justify-center text-xs text-green-600 font-medium">
+                      ✓ Done
+                    </div>
+                  </div>
+                )}
+
+                {/* Cancel Button */}
+                {downloadProgress < 100 && (
+                  <button
+                    type="button"
+                    onClick={cancelDownload}
+                    className="mt-6 w-full rounded-xl border border-red-200 bg-red-50 py-3 text-sm font-semibold text-red-600 transition hover:bg-red-100 active:scale-95"
+                  >
+                    Cancel Download
+                  </button>
+                )}
+
+                {downloadProgress === 100 && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setDownloadFile(null);
+                      setDownloadProgress(0);
+                    }}
+                    className="mt-6 w-full rounded-xl bg-blue-600 py-3 text-sm font-semibold text-white transition hover:bg-blue-700 active:scale-95"
+                  >
+                    Close
+                  </button>
+                )}
               </div>
-
             </div>
-
-            <div className="mb-2 flex items-center justify-between">
-
-              <span className="text-sm font-medium text-slate-600">
-                Download progress
-              </span>
-
-              <span className="text-sm font-bold text-blue-600">
-                {downloadProgress}%
-              </span>
-
-            </div>
-
-            <div className="h-3 overflow-hidden rounded-full bg-slate-200">
-
-              <div
-                className="h-full rounded-full bg-blue-600 transition-all duration-300"
-                style={{
-                  width: `${downloadProgress}%`,
-                }}
-              />
-
-            </div>
-
           </div>
-
         </div>
-
       )}
 
       {/* File Delete Confirmation Modal */}
@@ -2637,6 +2903,276 @@ function Dashboard() {
 
         </div>
 
+      )}
+
+      {/* ========== PROFILE MODAL ========== */}
+      {showProfile && (
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-slate-950/50 p-4 backdrop-blur-sm">
+          <div
+            className="w-full max-w-md max-h-[90vh] overflow-hidden rounded-3xl bg-white shadow-2xl"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between border-b border-slate-200 px-6 py-5 flex-shrink-0">
+              <div className="flex items-center gap-3">
+                <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-blue-100 text-blue-600">
+                  <FaUser />
+                </div>
+                <div>
+                  <h3 className="font-bold text-slate-800">Account Settings</h3>
+                  <p className="text-xs text-slate-500">Manage your profile</p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={closeProfile}
+                className="flex h-10 w-10 items-center justify-center rounded-xl bg-slate-100 text-slate-600 hover:bg-red-50 hover:text-red-500 flex-shrink-0"
+              >
+                <FaTimes />
+              </button>
+            </div>
+
+            <div className="overflow-y-auto px-6 py-5 flex-1" style={{ maxHeight: "calc(90vh - 80px)" }}>
+              {/* Profile Success/Error Messages */}
+              {profileSuccess && (
+                <div className="mb-4 rounded-xl bg-green-50 px-4 py-3 text-sm text-green-700">
+                  {profileSuccess}
+                </div>
+              )}
+              {profileError && (
+                <div className="mb-4 rounded-xl bg-red-50 px-4 py-3 text-sm text-red-700">
+                  {profileError}
+                </div>
+              )}
+
+              {/* User Info */}
+              <div className="mb-6 flex items-center gap-4 rounded-2xl bg-slate-50 p-4">
+                <div className="flex h-16 w-16 flex-shrink-0 items-center justify-center rounded-full bg-blue-100 text-2xl font-bold text-blue-600">
+                  {firstName.charAt(0).toUpperCase()}
+                </div>
+                <div className="min-w-0">
+                  <p className="font-semibold text-slate-800">{user?.full_name || "User"}</p>
+                  <p className="text-sm text-slate-500 break-all">{user?.email || ""}</p>
+                </div>
+              </div>
+
+              {/* Edit Name Section */}
+              <div className="mb-6">
+                <div className="flex items-center justify-between mb-3">
+                  <h4 className="font-semibold text-slate-700 flex items-center gap-2">
+                    <FaEdit className="text-blue-500" />
+                    Full Name
+                  </h4>
+                  {!editName && (
+                    <button
+                      type="button"
+                      onClick={() => setEditName(true)}
+                      className="text-sm font-medium text-blue-600 hover:text-blue-700"
+                    >
+                      Edit
+                    </button>
+                  )}
+                </div>
+
+                {editName ? (
+                  <form onSubmit={handleUpdateName} className="space-y-3">
+                    <input
+                      type="text"
+                      value={newFullName}
+                      onChange={(e) => setNewFullName(e.target.value)}
+                      className="w-full rounded-xl border border-slate-200 px-4 py-3 text-sm outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
+                      placeholder="Enter your full name"
+                      autoFocus
+                    />
+                    <div className="flex gap-3">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setEditName(false);
+                          setNewFullName(user?.full_name || "");
+                          setProfileError("");
+                        }}
+                        className="flex-1 rounded-xl border border-slate-200 px-4 py-2.5 text-sm font-semibold text-slate-600 hover:bg-slate-50"
+                      >
+                        Cancel
+                      </button>
+                      <button
+                        type="submit"
+                        disabled={profileLoading}
+                        className="flex-1 rounded-xl bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-blue-700 disabled:opacity-60"
+                      >
+                        {profileLoading ? "Saving..." : "Save"}
+                      </button>
+                    </div>
+                  </form>
+                ) : (
+                  <p className="text-sm text-slate-700">{user?.full_name || "Not set"}</p>
+                )}
+              </div>
+
+              {/* Password Section */}
+              <div className="mb-6">
+                <div className="flex items-center justify-between mb-3">
+                  <h4 className="font-semibold text-slate-700 flex items-center gap-2">
+                    <FaLock className="text-red-500" />
+                    Password
+                  </h4>
+                  {!editPassword && (
+                    <button
+                      type="button"
+                      onClick={() => setEditPassword(true)}
+                      className="text-sm font-medium text-blue-600 hover:text-blue-700"
+                    >
+                      Change
+                    </button>
+                  )}
+                </div>
+
+                {editPassword ? (
+                  <form onSubmit={handleUpdatePassword} className="space-y-3">
+                    <div>
+                      <label className="block text-xs font-medium text-slate-600 mb-1">
+                        Current Password
+                      </label>
+                      <input
+                        type={showPassword ? "text" : "password"}
+                        value={currentPassword}
+                        onChange={(e) => setCurrentPassword(e.target.value)}
+                        className="w-full rounded-xl border border-slate-200 px-4 py-3 text-sm outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
+                        placeholder="Enter current password"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-medium text-slate-600 mb-1">
+                        New Password
+                      </label>
+                      <input
+                        type={showPassword ? "text" : "password"}
+                        value={newPassword}
+                        onChange={(e) => setNewPassword(e.target.value)}
+                        className="w-full rounded-xl border border-slate-200 px-4 py-3 text-sm outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
+                        placeholder="Enter new password (min 8 chars)"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-medium text-slate-600 mb-1">
+                        Confirm New Password
+                      </label>
+                      <input
+                        type={showPassword ? "text" : "password"}
+                        value={confirmPassword}
+                        onChange={(e) => setConfirmPassword(e.target.value)}
+                        className="w-full rounded-xl border border-slate-200 px-4 py-3 text-sm outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
+                        placeholder="Confirm new password"
+                      />
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <input
+                        type="checkbox"
+                        id="showPassword"
+                        checked={showPassword}
+                        onChange={(e) => setShowPassword(e.target.checked)}
+                        className="h-4 w-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500"
+                      />
+                      <label htmlFor="showPassword" className="text-sm text-slate-600">
+                        Show passwords
+                      </label>
+                    </div>
+                    <div className="flex gap-3">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setEditPassword(false);
+                          setCurrentPassword("");
+                          setNewPassword("");
+                          setConfirmPassword("");
+                          setProfileError("");
+                        }}
+                        className="flex-1 rounded-xl border border-slate-200 px-4 py-2.5 text-sm font-semibold text-slate-600 hover:bg-slate-50"
+                      >
+                        Cancel
+                      </button>
+                      <button
+                        type="submit"
+                        disabled={profileLoading}
+                        className="flex-1 rounded-xl bg-red-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-red-700 disabled:opacity-60"
+                      >
+                        {profileLoading ? "Updating..." : "Update Password"}
+                      </button>
+                    </div>
+                  </form>
+                ) : (
+                  <p className="text-sm text-slate-500">••••••••</p>
+                )}
+              </div>
+
+              {/* Email (read-only) */}
+              <div className="mb-6">
+                <h4 className="font-semibold text-slate-700 flex items-center gap-2 mb-2">
+                  <FaEnvelope className="text-purple-500" />
+                  Email
+                </h4>
+                <p className="text-sm text-slate-700 break-all">{user?.email || ""}</p>
+              </div>
+
+              {/* Logout Button in Profile */}
+              <button
+                type="button"
+                onClick={() => {
+                  closeProfile();
+                  setShowLogoutConfirm(true);
+                }}
+                className="w-full rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-semibold text-red-600 transition hover:bg-red-100"
+              >
+                Log Out
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ========== LOGOUT CONFIRMATION MODAL (macOS/iOS style) ========== */}
+      {showLogoutConfirm && (
+        <div
+          className="fixed inset-0 z-[9999] flex items-center justify-center bg-slate-950/30 p-4 backdrop-blur-sm"
+          onClick={() => setShowLogoutConfirm(false)}
+        >
+          <div
+            className="w-full max-w-sm overflow-hidden rounded-3xl border border-white/40 bg-white/95 shadow-2xl backdrop-blur-xl"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="px-6 pb-5 pt-7 text-center">
+              <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-red-50 text-2xl">
+                ↪
+              </div>
+
+              <h2 className="mt-4 text-xl font-bold text-slate-800">
+                Log out?
+              </h2>
+
+              <p className="mt-2 text-sm leading-6 text-slate-500">
+                Are you sure you want to log out of your CloudVault account?
+              </p>
+            </div>
+
+            <div className="border-t border-slate-200">
+              <button
+                type="button"
+                onClick={() => setShowLogoutConfirm(false)}
+                className="w-full border-b border-slate-200 px-5 py-4 text-sm font-semibold text-blue-600 transition hover:bg-slate-50 active:bg-slate-100"
+              >
+                Cancel
+              </button>
+
+              <button
+                type="button"
+                onClick={handleLogout}
+                className="w-full px-5 py-4 text-sm font-bold text-red-500 transition hover:bg-red-50 active:bg-red-100"
+              >
+                Log Out
+              </button>
+            </div>
+          </div>
+        </div>
       )}
 
     </div>

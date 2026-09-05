@@ -66,6 +66,20 @@ export function AuthProvider({ children }) {
     return data;
   };
 
+  // ========== UPDATE USER FUNCTION ==========
+  const updateUser = (updatedUserData) => {
+    // Merge the updated data with existing user
+    const updatedUser = { ...user, ...updatedUserData };
+    
+    // Update state
+    setUser(updatedUser);
+    
+    // Update localStorage
+    localStorage.setItem("user", JSON.stringify(updatedUser));
+    
+    return updatedUser;
+  };
+
   useEffect(() => {
     let mounted = true;
 
@@ -218,6 +232,7 @@ export function AuthProvider({ children }) {
   const value = {
     user,
     setUser,
+    updateUser, // <-- NEW: Add this to the context value
     login,
     logout,
     loading,

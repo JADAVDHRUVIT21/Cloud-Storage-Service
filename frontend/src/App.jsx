@@ -9,7 +9,6 @@ import MyFiles from "./pages/dashboard/MyFiles";
 import Trash from "./pages/dashboard/Trash";
 import Recent from "./pages/dashboard/Recent";
 import Folder from "./pages/dashboard/Folder";
-import Starred from "./pages/dashboard/Starred"; // ✅ ADD THIS IMPORT
 
 function ProtectedRoute({ children }) {
   const { isAuthenticated, loading } = useAuth();
@@ -65,16 +64,6 @@ function App() {
         element={
           <ProtectedRoute>
             <Recent />
-          </ProtectedRoute>
-        }
-      />
-
-      {/* ✅ ADD THE STARRED ROUTE */}
-      <Route
-        path="/starred"
-        element={
-          <ProtectedRoute>
-            <Starred />
           </ProtectedRoute>
         }
       />
